@@ -2,6 +2,7 @@ package dao
 
 import (
 	"time"
+	"users-api/internal/domain"
 )
 
 type UserModel struct {
@@ -16,8 +17,8 @@ type UserModel struct {
 }
 
 // ToDomain convierte de modelo MySQL a modelo de negocio
-func (u UserModel) ToDomain() domain.UserDto {
-	return domain.UserDto{
+func (u UserModel) ToDomain() domain.User {
+	return domain.User{
 		ID:        u.ID,
 		Email:     u.Email,
 		FirstName: u.FirstName,
@@ -29,7 +30,7 @@ func (u UserModel) ToDomain() domain.UserDto {
 }
 
 // FromDomain convierte de modelo de negocio a modelo MySQL
-func FromDomain(domainUser domain.UserDto) UserModel {
+func FromDomain(domainUser domain.User) UserModel {
 	return UserModel{
 		ID:           domainUser.ID,
 		Email:        domainUser.Email,

@@ -1,15 +1,15 @@
 package main
 
 import (
-	"clase02-mongo/internal/config"
-	"clase02-mongo/internal/controllers"
-	"clase02-mongo/internal/db"
-	"clase02-mongo/internal/middleware"
-	"clase02-mongo/internal/repository"
-	"clase02-mongo/internal/services"
 	"log"
 	"net/http"
 	"time"
+	"users-api/internal/config"
+	"users-api/internal/controllers"
+	"users-api/internal/db"
+	"users-api/internal/middleware"
+	"users-api/internal/repository"
+	"users-api/internal/services"
 
 	"github.com/gin-gonic/gin"
 )
@@ -66,7 +66,7 @@ func main() {
 	router.DELETE("/users/:id", userController.DeleteUser)
 
 	// POST /auth/login - login de usuario
-	router.POST("/auth/login", userController.LoginUser)
+	// router.POST("/auth/login", userController.LoginUser)
 
 	// Configuración del server HTTP
 	srv := &http.Server{

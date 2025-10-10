@@ -11,50 +11,38 @@ import (
 )
 
 // UsersService define la lógica de negocio para Users
-// Capa intermedia entre Controllers (HTTP) y Repository (datos)
-// Responsabilidades: validaciones, transformaciones, reglas de negocio
 type UsersService interface {
-	// List retorna todos los usuarios
-	List(ctx context.Context) ([]domain.UserDto, error)
-
-	// Create valida y crea un nuevo usuario
-	Create(ctx context.Context, user domain.UserDto) (domain.UserDto, error)
-
-	// GetByID obtiene un usuario por su ID
-	GetByID(ctx context.Context, id string) (domain.UserDto, error)
-
-	// GetByEmail obtiene un usuario por su email
-	GetByEmail(ctx context.Context, email string) (domain.UserDto, error)
-
-	// Update actualiza un usuario existente
-	Update(ctx context.Context, id string, user domain.UserDto) (domain.UserDto, error)
-
-	// Delete elimina un usuario por ID
-	Delete(ctx context.Context, id string) error
-
-	// Login valida credenciales de usuario
+	List(ctx context.Context) ([]domain.User, error)
+	Create(ctx context.Context, user domain.User) (domain.User, error)
+	GetByID(ctx context.Context, id string) (domain.User, error) // Cambiar a string
+	GetByEmail(ctx context.Context, email string) (domain.User, error)
+	Update(ctx context.Context, id string, user domain.User) (domain.User, error) // Cambiar a string
+	Delete(ctx context.Context, id string) error                                  // Cambiar a string
 	Login(ctx context.Context, loginReq domain.LoginRequest) (domain.LoginResponse, error)
 }
 
 // UsersServiceImpl implementa UsersService
+// UsersServiceImpl implementa UsersService
 type UsersServiceImpl struct {
-	repository repository.UsersRepository // Inyección de dependencia
+	repository repository.UsersRepository
 }
 
 // NewUsersService crea una nueva instancia del service
-func NewUsersService(repository repository.UsersRepository) UsersService {
-	return &UsersServiceImpl{repository: repository}
+func NewUsersService(repository repository.UsersRepository) *UsersServiceImpl {
+	return &UsersServiceImpl{
+		repository: repository,
+	}
 }
 
 // List obtiene todos los usuarios
-func (s *UsersServiceImpl) List(ctx context.Context) ([]domain.UserDto, error) {
+func (s *UsersServiceImpl) List(ctx context.Context) ([]domain.User, error) {
 	return s.repository.List(ctx)
 }
 
 // Create valida y crea un nuevo usuario
-func (s *UsersServiceImpl) Create(ctx context.Context, user domain.UserDto) (domain.UserDto, error) {
+func (s *UsersServiceImpl) Create(ctx context.Context, user domain.User) (domain.User, error) {
 	if err := s.validateUser(user); err != nil {
-		return domain.UserDto{}, err
+		return domain.User{}, err
 	}
 
 	// Hash de la contraseña antes de guardar
@@ -64,31 +52,31 @@ func (s *UsersServiceImpl) Create(ctx context.Context, user domain.UserDto) (dom
 }
 
 // GetByID obtiene un usuario por su ID
-func (s *UsersServiceImpl) GetByID(ctx context.Context, id string) (domain.UserDto, error) {
+func (s *UsersServiceImpl) GetByID(ctx context.Context, id string) (domain.User, error) {
 	userID, err := strconv.Atoi(id)
 	if err != nil {
-		return domain.UserDto{}, errors.New("invalid user ID format")
+		return domain.User{}, errors.New("invalid user ID format")
 	}
 	return s.repository.GetByID(ctx, userID)
 }
 
 // GetByEmail obtiene un usuario por su email
-func (s *UsersServiceImpl) GetByEmail(ctx context.Context, email string) (domain.UserDto, error) {
+func (s *UsersServiceImpl) GetByEmail(ctx context.Context, email string) (domain.User, error) {
 	if strings.TrimSpace(email) == "" {
-		return domain.UserDto{}, errors.New("email is required")
+		return domain.User{}, errors.New("email is required")
 	}
 	return s.repository.GetByEmail(ctx, email)
 }
 
 // Update actualiza un usuario existente
-func (s *UsersServiceImpl) Update(ctx context.Context, id string, user domain.UserDto) (domain.UserDto, error) {
+func (s *UsersServiceImpl) Update(ctx context.Context, id string, user domain.User) (domain.User, error) {
 	userID, err := strconv.Atoi(id)
 	if err != nil {
-		return domain.UserDto{}, errors.New("invalid user ID format")
+		return domain.User{}, errors.New("invalid user ID format")
 	}
 
 	if err := s.validateUser(user); err != nil {
-		return domain.UserDto{}, err
+		return domain.User{}, err
 	}
 
 	// Si se envía una nueva contraseña, hashearla
@@ -129,7 +117,7 @@ func (s *UsersServiceImpl) Login(ctx context.Context, loginReq domain.LoginReque
 		return domain.LoginResponse{}, errors.New("invalid credentials")
 	}
 
-	// TODO: Generar JWT token aquí
+	// Generar JWT token
 	token, err := utils.GenerateJWT(user.ID, user.IsAdmin)
 	if err != nil {
 		return domain.LoginResponse{}, errors.New("failed to generate token")
@@ -143,7 +131,7 @@ func (s *UsersServiceImpl) Login(ctx context.Context, loginReq domain.LoginReque
 }
 
 // validateUser aplica reglas de negocio para validar un usuario
-func (s *UsersServiceImpl) validateUser(user domain.UserDto) error {
+func (s *UsersServiceImpl) validateUser(user domain.User) error {
 	if strings.TrimSpace(user.Email) == "" {
 		return errors.New("email is required and cannot be empty")
 	}
