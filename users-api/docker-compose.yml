@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # Servicio para la API de usuarios
+  users-api:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy # Espera a que el healthcheck de la DB pase
+    environment:
+      # Variables de entorno para MySQL
+      - PORT=8080
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=appuser
+      - DB_PASS=1234
+      - DB_NAME=e-commerce-users-db
+
+  # Servicio para la base de datos MySQL
+  db:
+    image: mysql:8.0
+    container_name: arqui2-ecommerce-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword # Es buena idea que la clave root sea otra
+      MYSQL_DATABASE: e-commerce-users-db
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: 1234
+    ports:
+      - "3306:3306"
+    volumes:
+      # CORREGIDO: El nombre del volumen ahora coincide con el de abajo.
+      - mysql_data:/var/lib/mysql
+      # ¡Esto es un buen agregado! Permite correr scripts SQL al iniciar la DB por primera vez.
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      retries: 5
+      
+volumes:
+  # CORREGIDO: El nombre del volumen que persistirá los datos.
+  mysql_data:
