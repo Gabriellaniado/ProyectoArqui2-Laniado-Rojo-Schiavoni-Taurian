@@ -41,7 +41,7 @@ func (s *UsersServiceImpl) List(ctx context.Context) ([]domain.User, error) {
 
 // Create valida y crea un nuevo usuario
 func (s *UsersServiceImpl) Create(ctx context.Context, user domain.User) (domain.User, error) {
-	if err := s.validateUser(user); err != nil {
+	if err := s.validateCreateUser(user); err != nil {
 		return domain.User{}, err
 	}
 
@@ -106,27 +106,26 @@ func (s *UsersServiceImpl) Login(ctx context.Context, loginReq domain.LoginReque
 	}
 
 	// Buscar usuario por email
-	user, err := s.repository.GetByEmail(ctx, loginReq.Email)
+	userModel, err := s.repository.GetByEmail(ctx, loginReq.Email)
 	if err != nil {
 		return domain.LoginResponse{}, errors.New("invalid credentials")
 	}
 
 	// Verificar contraseña
-	hashedPassword := utils.HashSHA256(loginReq.Password)
-	if user.Password != hashedPassword {
+	if utils.HashSHA256(loginReq.Password) != userModel.Password {
 		return domain.LoginResponse{}, errors.New("invalid credentials")
 	}
 
 	// Generar JWT token
-	token, err := utils.GenerateJWT(user.ID, user.IsAdmin)
+	token, err := utils.GenerateJWT(userModel.ID, userModel.IsAdmin)
 	if err != nil {
 		return domain.LoginResponse{}, errors.New("failed to generate token")
 	}
 
 	return domain.LoginResponse{
 		Token:   token,
-		Name:    user.FirstName,
-		Surname: user.LastName,
+		Name:    userModel.FirstName,
+		Surname: userModel.LastName,
 	}, nil
 }
 
@@ -141,7 +140,16 @@ func (s *UsersServiceImpl) validateUser(user domain.User) error {
 	if strings.TrimSpace(user.LastName) == "" {
 		return errors.New("last name is required and cannot be empty")
 	}
-	if user.ID == 0 && strings.TrimSpace(user.Password) == "" {
+	return nil
+}
+
+// Crear método separado para validar CREATE
+func (s *UsersServiceImpl) validateCreateUser(user domain.User) error {
+	if err := s.validateUser(user); err != nil {
+		return err
+	}
+	// Solo requerir password en CREATE
+	if strings.TrimSpace(user.Password) == "" {
 		return errors.New("password is required for new users")
 	}
 	return nil

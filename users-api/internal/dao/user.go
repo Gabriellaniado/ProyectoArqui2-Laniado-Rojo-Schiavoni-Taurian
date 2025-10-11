@@ -21,6 +21,7 @@ func (u UserModel) ToDomain() domain.User {
 	return domain.User{
 		ID:        u.ID,
 		Email:     u.Email,
+		Password:  u.PasswordHash, // En DAO se guarda como PasswordHash, en domain como Password
 		FirstName: u.FirstName,
 		LastName:  u.LastName,
 		IsAdmin:   u.IsAdmin,
@@ -38,7 +39,5 @@ func FromDomain(domainUser domain.User) UserModel {
 		FirstName:    domainUser.FirstName,
 		LastName:     domainUser.LastName,
 		IsAdmin:      domainUser.IsAdmin,
-		CreatedAt:    domainUser.CreatedAt,
-		UpdatedAt:    domainUser.UpdatedAt,
 	}
 }

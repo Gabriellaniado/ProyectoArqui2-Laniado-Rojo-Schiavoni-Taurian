@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"strings"
 	"users-api/internal/dao"
 	"users-api/internal/domain"
 
@@ -85,15 +86,46 @@ func (r *MySQLUsersRepository) GetByEmail(ctx context.Context, email string) (do
 }
 
 // Update actualiza un usuario existente
-func (r *MySQLUsersRepository) Update(ctx context.Context, id int, user domain.User) (domain.User, error) {
+/*func (r *MySQLUsersRepository) Update(ctx context.Context, id int, user domain.User) (domain.User, error) {
 	daoUser := dao.FromDomain(user)
 	daoUser.ID = id
 
-	if err := r.db.WithContext(ctx).Save(&daoUser).Error; err != nil {
+	if err := r.db.WithContext(ctx).Omit("created_at").Save(&daoUser).Error; err != nil {
 		return domain.User{}, err
 	}
 
 	return daoUser.ToDomain(), nil
+}*/
+// Update actualiza un usuario existente
+func (r *MySQLUsersRepository) Update(ctx context.Context, id int, user domain.User) (domain.User, error) {
+	// Preparar mapa de campos a actualizar
+	updates := map[string]interface{}{
+		"email":      user.Email,
+		"first_name": user.FirstName,
+		"last_name":  user.LastName,
+		"is_admin":   user.IsAdmin,
+	}
+
+	// Solo agregar password si no está vacío
+	if strings.TrimSpace(user.Password) != "" {
+		updates["password_hash"] = user.Password
+	}
+
+	// Actualizar solo los campos especificados
+	result := r.db.WithContext(ctx).
+		Model(&dao.UserModel{}).
+		Where("id = ?", id).
+		Updates(updates)
+
+	if result.Error != nil {
+		return domain.User{}, result.Error
+	}
+
+	// Obtener el usuario actualizado
+	var userDAO dao.UserModel
+	r.db.WithContext(ctx).Where("id = ?", id).First(&userDAO)
+
+	return userDAO.ToDomain(), nil
 }
 
 // Delete elimina un usuario por ID

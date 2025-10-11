@@ -66,7 +66,7 @@ func main() {
 	router.DELETE("/users/:id", userController.DeleteUser)
 
 	// POST /auth/login - login de usuario
-	// router.POST("/auth/login", userController.LoginUser)
+	router.POST("/auth/login", userController.Login)
 
 	// Configuración del server HTTP
 	srv := &http.Server{
