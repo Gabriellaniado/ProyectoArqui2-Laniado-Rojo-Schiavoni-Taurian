@@ -10,27 +10,17 @@ import (
 	"gorm.io/gorm"
 )
 
-// UsersRepository define las operaciones de datos para Users
-type UsersRepository interface {
-	List(ctx context.Context) ([]domain.User, error)
-	Create(ctx context.Context, user domain.User) (domain.User, error)
-	GetByID(ctx context.Context, id int) (domain.User, error)
-	GetByEmail(ctx context.Context, email string) (domain.User, error)
-	Update(ctx context.Context, id int, user domain.User) (domain.User, error)
-	Delete(ctx context.Context, id int) error
-}
-
 // MySQLUsersRepository implementa UsersRepository usando MySQL con GORM
 type MySQLUsersRepository struct {
 	db *gorm.DB
 }
 
-func NewMySQLUsersRepository(db *gorm.DB) UsersRepository {
+func NewMySQLUsersRepository(db *gorm.DB) *MySQLUsersRepository {
 	return &MySQLUsersRepository{db: db}
 }
 
 // List obtiene todos los usuarios de MySQL
-func (r *MySQLUsersRepository) List(ctx context.Context) ([]domain.User, error) {
+func (r *MySQLUsersRepository) List(ctx context.Context) ([]domain.UserResponse, error) {
 	var daoUsers []dao.UserModel
 
 	if err := r.db.WithContext(ctx).Find(&daoUsers).Error; err != nil {
@@ -38,37 +28,37 @@ func (r *MySQLUsersRepository) List(ctx context.Context) ([]domain.User, error) 
 	}
 
 	// Convertir de DAO a Domain - corregido sin desreferenciación
-	domainUsers := make([]domain.User, len(daoUsers))
+	domainUsers := make([]domain.UserResponse, len(daoUsers))
 	for i, daoUser := range daoUsers {
-		domainUsers[i] = daoUser.ToDomain()
+		domainUsers[i] = daoUser.ToDomainResponse()
 	}
 
 	return domainUsers, nil
 }
 
 // Create inserta un nuevo usuario en MySQL
-func (r *MySQLUsersRepository) Create(ctx context.Context, user domain.User) (domain.User, error) {
+func (r *MySQLUsersRepository) Create(ctx context.Context, user domain.User) (domain.UserResponse, error) {
 	daoUser := dao.FromDomain(user)
 
 	if err := r.db.WithContext(ctx).Create(&daoUser).Error; err != nil {
-		return domain.User{}, err
+		return domain.UserResponse{}, err
 	}
 
-	return daoUser.ToDomain(), nil
+	return daoUser.ToDomainResponse(), nil
 }
 
 // GetByID busca un usuario por su ID
-func (r *MySQLUsersRepository) GetByID(ctx context.Context, id int) (domain.User, error) {
+func (r *MySQLUsersRepository) GetByID(ctx context.Context, id int) (domain.UserResponse, error) {
 	var daoUser dao.UserModel
 
 	if err := r.db.WithContext(ctx).First(&daoUser, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return domain.User{}, errors.New("user not found")
+			return domain.UserResponse{}, errors.New("user not found")
 		}
-		return domain.User{}, err
+		return domain.UserResponse{}, err
 	}
 
-	return daoUser.ToDomain(), nil
+	return daoUser.ToDomainResponse(), nil
 }
 
 // GetByEmail busca un usuario por su email
@@ -97,7 +87,7 @@ func (r *MySQLUsersRepository) GetByEmail(ctx context.Context, email string) (do
 	return daoUser.ToDomain(), nil
 }*/
 // Update actualiza un usuario existente
-func (r *MySQLUsersRepository) Update(ctx context.Context, id int, user domain.User) (domain.User, error) {
+func (r *MySQLUsersRepository) Update(ctx context.Context, id int, user domain.User) (domain.UserResponse, error) {
 	// Preparar mapa de campos a actualizar
 	updates := map[string]interface{}{
 		"email":      user.Email,
@@ -118,14 +108,14 @@ func (r *MySQLUsersRepository) Update(ctx context.Context, id int, user domain.U
 		Updates(updates)
 
 	if result.Error != nil {
-		return domain.User{}, result.Error
+		return domain.UserResponse{}, result.Error
 	}
 
 	// Obtener el usuario actualizado
 	var userDAO dao.UserModel
 	r.db.WithContext(ctx).Where("id = ?", id).First(&userDAO)
 
-	return userDAO.ToDomain(), nil
+	return userDAO.ToDomainResponse(), nil
 }
 
 // Delete elimina un usuario por ID
