@@ -59,6 +59,9 @@ func main() {
 	// GET /users/:id - obtener usuario por ID
 	router.GET("/users/:id", userController.GetUserByID)
 
+	// GET /users/email/:email - obtener usuario por email
+	router.GET("/users/email/:email", userController.GetUserByEmail)
+
 	// PUT /users/:id - actualizar usuario existente
 	router.PUT("/users/:id", userController.UpdateUser)
 

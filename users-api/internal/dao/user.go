@@ -16,12 +16,25 @@ type UserModel struct {
 	UpdatedAt    time.Time `gorm:"autoUpdateTime"`
 }
 
-// ToDomain convierte de modelo MySQL a modelo de negocio
+// ToDomain convierte de modelo MySQL a modelo de negocio para el login con password
 func (u UserModel) ToDomain() domain.User {
 	return domain.User{
 		ID:        u.ID,
 		Email:     u.Email,
 		Password:  u.PasswordHash, // En DAO se guarda como PasswordHash, en domain como Password
+		FirstName: u.FirstName,
+		LastName:  u.LastName,
+		IsAdmin:   u.IsAdmin,
+		CreatedAt: u.CreatedAt,
+		UpdatedAt: u.UpdatedAt,
+	}
+}
+
+// ToDomainResponse convierte directamente a UserResponse (SIN password - para responses HTTP)
+func (u UserModel) ToDomainResponse() domain.UserResponse {
+	return domain.UserResponse{
+		ID:        u.ID,
+		Email:     u.Email,
 		FirstName: u.FirstName,
 		LastName:  u.LastName,
 		IsAdmin:   u.IsAdmin,

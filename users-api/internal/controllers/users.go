@@ -1,24 +1,35 @@
 package controllers
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 	"strings"
 	"users-api/internal/domain"
-	"users-api/internal/services"
 
 	"github.com/gin-gonic/gin"
 )
 
 // UsersController maneja las peticiones HTTP relacionadas con usuarios
 // Actúa como intermediario entre las rutas HTTP y la lógica de negocio (services)
+
+type UsersService interface {
+	List(ctx context.Context) ([]domain.UserResponse, error)
+	Create(ctx context.Context, user domain.User) (domain.UserResponse, error)
+	GetByID(ctx context.Context, id string) (domain.UserResponse, error)
+	GetByEmail(ctx context.Context, email string) (domain.User, error)
+	Update(ctx context.Context, id string, user domain.User) (domain.UserResponse, error)
+	Delete(ctx context.Context, id string) error
+	Login(ctx context.Context, loginReq domain.LoginRequest) (domain.LoginResponse, error)
+}
+
 type UsersController struct {
-	service services.UsersService // Referencia al service para lógica de negocio
+	service UsersService // Referencia al service para lógica de negocio
 }
 
 // NewUsersController crea una nueva instancia del controller
 // Constructor que inyecta la dependencia del service
-func NewUsersController(service services.UsersService) *UsersController {
+func NewUsersController(service UsersService) *UsersController {
 	return &UsersController{
 		service: service,
 	}
@@ -35,9 +46,9 @@ func (c *UsersController) GetUsers(ctx *gin.Context) {
 		return
 	}
 
-	for i := range users {
+	/*for i := range users {
 		users[i].Password = "" // No devolver el hash de la contraseña HAY QUE BUSCAR OTRA FORMA, QUIZAS OTRO DTO.
-	}
+	}*/
 	// 2. Si todo sale bien, retornamos 200 con la lista de usuarios
 	ctx.JSON(http.StatusOK, users)
 }
@@ -66,7 +77,7 @@ func (c *UsersController) CreateUser(ctx *gin.Context) {
 		return
 	}
 
-	createdUser.Password = "" // No devolver el hash de la contraseña
+	//createdUser.Password = "" // No devolver el hash de la contraseña
 
 	// 3. Si se crea exitosamente, retornamos 201 (Created) con el usuario
 	ctx.JSON(http.StatusCreated, createdUser)
@@ -94,7 +105,7 @@ func (c *UsersController) GetUserByID(ctx *gin.Context) {
 		return
 	}
 
-	user.Password = "" // No devolver el hash de la contraseña
+	//user.Password = "" // No devolver el hash de la contraseña
 	// 4. Si se encuentra, retornamos 200 con el usuario
 	ctx.JSON(http.StatusOK, user)
 }
@@ -112,7 +123,7 @@ func (c *UsersController) GetUserByEmail(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	user.Password = "" // No devolver el hash de la contraseña
+	user.Password = "" // No devolver el hash de la contraseña. Es necesario que llegue la contraseña para el login
 
 	// 3. Si se encuentra, retornamos 200 con el usuario
 	ctx.JSON(http.StatusOK, user)
@@ -142,7 +153,7 @@ func (c *UsersController) UpdateUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	updatedUser.Password = "" // No devolver el hash de la contraseña
+	//updatedUser.Password = "" // No devolver el hash de la contraseña
 	// 4. Retornamos el usuario actualizado
 	ctx.JSON(http.StatusOK, updatedUser)
 }

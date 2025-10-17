@@ -6,43 +6,42 @@ import (
 	"strconv"
 	"strings"
 	"users-api/internal/domain"
-	"users-api/internal/repository"
 	"users-api/internal/utils"
 )
 
 // UsersService define la lógica de negocio para Users
-type UsersService interface {
-	List(ctx context.Context) ([]domain.User, error)
-	Create(ctx context.Context, user domain.User) (domain.User, error)
-	GetByID(ctx context.Context, id string) (domain.User, error) // Cambiar a string
+type UsersRepository interface {
+	List(ctx context.Context) ([]domain.UserResponse, error)
+	Create(ctx context.Context, user domain.User) (domain.UserResponse, error)
+	GetByID(ctx context.Context, id int) (domain.UserResponse, error)
 	GetByEmail(ctx context.Context, email string) (domain.User, error)
-	Update(ctx context.Context, id string, user domain.User) (domain.User, error) // Cambiar a string
-	Delete(ctx context.Context, id string) error                                  // Cambiar a string
-	Login(ctx context.Context, loginReq domain.LoginRequest) (domain.LoginResponse, error)
+	Update(ctx context.Context, id int, user domain.User) (domain.UserResponse, error)
+	Delete(ctx context.Context, id int) error
+	//Login(ctx context.Context, loginReq domain.LoginRequest) (domain.LoginResponse, error)
 }
 
 // UsersServiceImpl implementa UsersService
 // UsersServiceImpl implementa UsersService
 type UsersServiceImpl struct {
-	repository repository.UsersRepository
+	repository UsersRepository
 }
 
 // NewUsersService crea una nueva instancia del service
-func NewUsersService(repository repository.UsersRepository) *UsersServiceImpl {
+func NewUsersService(repository UsersRepository) *UsersServiceImpl {
 	return &UsersServiceImpl{
 		repository: repository,
 	}
 }
 
 // List obtiene todos los usuarios
-func (s *UsersServiceImpl) List(ctx context.Context) ([]domain.User, error) {
+func (s *UsersServiceImpl) List(ctx context.Context) ([]domain.UserResponse, error) {
 	return s.repository.List(ctx)
 }
 
 // Create valida y crea un nuevo usuario
-func (s *UsersServiceImpl) Create(ctx context.Context, user domain.User) (domain.User, error) {
+func (s *UsersServiceImpl) Create(ctx context.Context, user domain.User) (domain.UserResponse, error) {
 	if err := s.validateCreateUser(user); err != nil {
-		return domain.User{}, err
+		return domain.UserResponse{}, err
 	}
 
 	// Hash de la contraseña antes de guardar
@@ -52,10 +51,10 @@ func (s *UsersServiceImpl) Create(ctx context.Context, user domain.User) (domain
 }
 
 // GetByID obtiene un usuario por su ID
-func (s *UsersServiceImpl) GetByID(ctx context.Context, id string) (domain.User, error) {
+func (s *UsersServiceImpl) GetByID(ctx context.Context, id string) (domain.UserResponse, error) {
 	userID, err := strconv.Atoi(id)
 	if err != nil {
-		return domain.User{}, errors.New("invalid user ID format")
+		return domain.UserResponse{}, errors.New("invalid user ID format")
 	}
 	return s.repository.GetByID(ctx, userID)
 }
@@ -69,14 +68,14 @@ func (s *UsersServiceImpl) GetByEmail(ctx context.Context, email string) (domain
 }
 
 // Update actualiza un usuario existente
-func (s *UsersServiceImpl) Update(ctx context.Context, id string, user domain.User) (domain.User, error) {
+func (s *UsersServiceImpl) Update(ctx context.Context, id string, user domain.User) (domain.UserResponse, error) {
 	userID, err := strconv.Atoi(id)
 	if err != nil {
-		return domain.User{}, errors.New("invalid user ID format")
+		return domain.UserResponse{}, errors.New("invalid user ID format")
 	}
 
 	if err := s.validateUser(user); err != nil {
-		return domain.User{}, err
+		return domain.UserResponse{}, err
 	}
 
 	// Si se envía una nueva contraseña, hashearla
