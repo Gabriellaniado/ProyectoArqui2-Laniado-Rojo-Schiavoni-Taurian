@@ -21,10 +21,6 @@ func NewItemsLocalCacheRepository(ttl time.Duration) *ItemsLocalCacheRepository 
 	}
 }
 
-func (r ItemsLocalCacheRepository) List(ctx context.Context, filters domain.SearchFilters) (domain.PaginatedResponse, error) {
-	return domain.PaginatedResponse{}, fmt.Errorf("list is not supported in memcached")
-}
-
 func (r ItemsLocalCacheRepository) Create(ctx context.Context, item domain.Item) (domain.Item, error) {
 	r.client.Set(item.ID, item, r.ttl)
 	return item, nil
@@ -49,7 +45,7 @@ func (r ItemsLocalCacheRepository) Update(ctx context.Context, id string, item d
 
 func (r ItemsLocalCacheRepository) Delete(ctx context.Context, id string) error {
 	it := r.client.Delete(id)
-	if it == false {
+	if !it {
 		return fmt.Errorf("item not found in cache")
 	}
 	return nil

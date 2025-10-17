@@ -65,6 +65,26 @@ func main() {
 	// Cache (ejercicio: ajustar TTL y agregar "índice" de claves)
 	// cache := cache.NewMemcached(memAddr)
 
+	// ========================================
+	// SALES - Configuración
+	// ========================================
+
+	// Repositorio MongoDB para Sales
+	salesMongoRepo := repository.NewMongoSalesRepository(ctx, cfg.Mongo.URI, cfg.Mongo.DB, "sales")
+
+	// Repositorio de cache para Sales (Memcached)
+	salesMemcachedRepo := repository.NewMemcachedSalesRepository(
+		cfg.Memcached.Host,
+		cfg.Memcached.Port,
+		time.Duration(cfg.Memcached.TTLSeconds)*time.Second,
+	)
+
+	// Capa de lógica de negocio para Sales
+	salesService := services.NewSalesService(salesMongoRepo, salesMemcachedRepo)
+
+	// Capa de controladores para Sales
+	salesController := controllers.NewSalesController(&salesService)
+
 	// 🌐 Configurar router HTTP con Gin
 	router := gin.Default()
 
@@ -91,6 +111,28 @@ func main() {
 	// DELETE /items/:id - eliminar item
 	router.DELETE("/items/:id", itemController.DeleteItem)
 
+	// ========================================
+	// SALES - Rutas
+	// ========================================
+
+	// GET /sales - listar ventas con filtros
+	//router.GET("/sales", salesController.List)
+
+	// POST /sales - crear nueva venta
+	router.POST("/sales", salesController.CreateSale)
+
+	// GET /sales/:id - obtener venta por ID (MongoDB ObjectID)
+	router.GET("/sales/:id", salesController.GetSaleByID)
+
+	// GET /sales/customer/:customerID - obtener todas las ventas de un cliente
+	router.GET("/sales/customer/:customerID", salesController.GetSalesByCustomerID)
+
+	// PUT /sales/:id - actualizar venta existente
+	router.PUT("/sales/:id", salesController.UpdateSale)
+
+	// DELETE /sales/:id - eliminar venta
+	router.DELETE("/sales/:id", salesController.DeleteSale)
+
 	// Configuración del server HTTP
 	srv := &http.Server{
 		Addr:              ":" + cfg.Port,
@@ -101,6 +143,7 @@ func main() {
 	log.Printf("🚀 API listening on port %s", cfg.Port)
 	log.Printf("📊 Health check: http://localhost:%s/healthz", cfg.Port)
 	log.Printf("📚 Items API: http://localhost:%s/items", cfg.Port)
+	log.Printf("💰 Sales API: http://localhost:%s/sales", cfg.Port)
 
 	// Iniciar servidor (bloquea hasta que se pare el servidor)
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
