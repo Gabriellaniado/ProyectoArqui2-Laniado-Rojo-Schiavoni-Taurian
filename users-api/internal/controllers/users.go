@@ -2,10 +2,11 @@ package controllers
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strconv"
-	"strings"
 	"users-api/internal/domain"
+	"users-api/internal/services"
 
 	"github.com/gin-gonic/gin"
 )
@@ -45,11 +46,6 @@ func (c *UsersController) GetUsers(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
-	/*for i := range users {
-		users[i].Password = "" // No devolver el hash de la contraseña HAY QUE BUSCAR OTRA FORMA, QUIZAS OTRO DTO.
-	}*/
-	// 2. Si todo sale bien, retornamos 200 con la lista de usuarios
 	ctx.JSON(http.StatusOK, users)
 }
 
@@ -68,16 +64,20 @@ func (c *UsersController) CreateUser(ctx *gin.Context) {
 	// 2. Llamamos al service para crear el usuario
 	createdUser, err := c.service.Create(ctx, user)
 	if err != nil {
-		if strings.Contains(err.Error(), "Duplicate entry") && strings.Contains(err.Error(), "email") {
-			ctx.JSON(http.StatusConflict, gin.H{"error": "Email already exists"})
-			return
+		switch {
+		case errors.Is(err, services.ErrFirstNameRequired):
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		case errors.Is(err, services.ErrLastNameRequired):
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		case errors.Is(err, services.ErrEmailRequired), errors.Is(err, services.ErrPasswordRequired):
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		case errors.Is(err, services.ErrEmailAlreadyExists):
+			ctx.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		default:
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
-		// Si hay error en la creación, retornamos 500
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
-	//createdUser.Password = "" // No devolver el hash de la contraseña
 
 	// 3. Si se crea exitosamente, retornamos 201 (Created) con el usuario
 	ctx.JSON(http.StatusCreated, createdUser)
@@ -150,10 +150,18 @@ func (c *UsersController) UpdateUser(ctx *gin.Context) {
 	// 3. Actualizamos el usuario
 	updatedUser, err := c.service.Update(ctx, strconv.Itoa(id), user)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		switch {
+		case errors.Is(err, services.ErrFirstNameRequired):
+			ctx.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		case errors.Is(err, services.ErrUserNotFound):
+			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		case errors.Is(err, services.ErrInvalidUserID):
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		default:
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
 		return
 	}
-	//updatedUser.Password = "" // No devolver el hash de la contraseña
 	// 4. Retornamos el usuario actualizado
 	ctx.JSON(http.StatusOK, updatedUser)
 }
@@ -172,7 +180,14 @@ func (c *UsersController) DeleteUser(ctx *gin.Context) {
 	// 2. Eliminamos el usuario
 	err = c.service.Delete(ctx, strconv.Itoa(id))
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		switch {
+		case errors.Is(err, services.ErrUserNotFound):
+			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		case errors.Is(err, services.ErrInvalidUserID):
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		default:
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
 		return
 	}
 
@@ -192,7 +207,14 @@ func (c *UsersController) Login(ctx *gin.Context) {
 	// 2. Llamar al servicio de login (pasando el LoginRequest completo)
 	response, err := c.service.Login(ctx, request)
 	if err != nil {
-		ctx.JSON(http.StatusForbidden, gin.H{"error": "No se pudo iniciar sesion"})
+		switch {
+		case errors.Is(err, services.ErrInvalidCredentials):
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		case errors.Is(err, services.ErrEmailRequired), errors.Is(err, services.ErrPasswordRequired):
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		default:
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
 		return
 	}
 
