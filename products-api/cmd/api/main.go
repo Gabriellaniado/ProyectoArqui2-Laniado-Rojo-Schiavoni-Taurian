@@ -37,7 +37,7 @@ func main() {
 	)
 
 	// Capa de cache local: maneja operaciones con CCache
-	// itemsLocalCacheRepo := repository.NewItemsLocalCacheRepository(30 * time.Second)
+	itemsLocalCacheRepo := repository.NewItemsLocalCacheRepository(30 * time.Second)
 
 	// Capa de búsqueda: maneja operaciones de búsqueda con Solr
 	/*itemsSolrRepo := repository.NewSolrItemsRepository(
@@ -56,7 +56,7 @@ func main() {
 	)
 
 	// Capa de lógica de negocio: validaciones, transformaciones
-	itemService := services.NewItemsService(itemsMongoRepo, itemsMemcachedRepo, itemsQueue, itemsQueue)
+	itemService := services.NewItemsService(itemsMongoRepo, itemsLocalCacheRepo, itemsMemcachedRepo, itemsQueue, itemsQueue)
 	go itemService.InitConsumer(ctx)
 
 	// Capa de controladores: maneja HTTP requests/responses

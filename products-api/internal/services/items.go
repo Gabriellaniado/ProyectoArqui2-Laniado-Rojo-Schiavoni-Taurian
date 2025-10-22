@@ -37,20 +37,22 @@ type ItemsConsumer interface { //consume mensajes de rabbit
 }
 
 type ItemsServiceImpl struct {
-	repository ItemsRepository // Inyección de dependencia
-	cache      ItemsRepository // Inyección de dependencia
-	publisher  ItemsPublisher
-	consumer   ItemsConsumer
+	repository       ItemsRepository // Inyección de dependencia
+	localCache       ItemsRepository // Inyección de dependencia
+	distributedCache ItemsRepository // Inyección de dependencia
+	publisher        ItemsPublisher
+	consumer         ItemsConsumer
 }
 
 // NewItemsService crea una nueva instancia del service
 // Pattern: Dependency Injection - recibe dependencies como parámetros
-func NewItemsService(repository ItemsRepository, cache ItemsRepository, publisher ItemsPublisher, consumer ItemsConsumer) ItemsServiceImpl {
+func NewItemsService(repository ItemsRepository, localCache ItemsRepository, distributedCache ItemsRepository, publisher ItemsPublisher, consumer ItemsConsumer) ItemsServiceImpl {
 	return ItemsServiceImpl{
-		repository: repository,
-		cache:      cache,
-		publisher:  publisher,
-		consumer:   consumer,
+		repository:       repository,
+		localCache:       localCache,
+		distributedCache: distributedCache,
+		publisher:        publisher,
+		consumer:         consumer,
 	}
 }
 
@@ -74,9 +76,13 @@ func (s *ItemsServiceImpl) Create(ctx context.Context, item domain.Item) (domain
 		return domain.Item{}, fmt.Errorf("error publishing item creation: %w", err)
 	}
 
-	_, err = s.cache.Create(ctx, created)
+	_, err = s.distributedCache.Create(ctx, created)
 	if err != nil {
-		return domain.Item{}, fmt.Errorf("error creating item in cache: %w", err)
+		return domain.Item{}, fmt.Errorf("error creating item in distributed cache: %w", err)
+	}
+	_, err = s.localCache.Create(ctx, created)
+	if err != nil {
+		return domain.Item{}, fmt.Errorf("error creating item in local cache: %w", err)
 	}
 
 	return created, nil
@@ -85,18 +91,29 @@ func (s *ItemsServiceImpl) Create(ctx context.Context, item domain.Item) (domain
 // GetByID obtiene un item por su ID
 // Consigna 2: Validar formato de ID antes de consultar DB
 func (s *ItemsServiceImpl) GetByID(ctx context.Context, id string) (domain.Item, error) {
-	item, err := s.cache.GetByID(ctx, id)
+	item, err := s.localCache.GetByID(ctx, id)
 	if err != nil {
-		item, err := s.repository.GetByID(ctx, id)
+		item, err := s.distributedCache.GetByID(ctx, id)
+
 		if err != nil {
-			return domain.Item{}, fmt.Errorf("error getting item from repository: %w", err)
+			item, err := s.repository.GetByID(ctx, id)
+			if err != nil {
+				return domain.Item{}, fmt.Errorf("error getting item from repository: %w", err)
+			}
+
+			_, err = s.localCache.Create(ctx, item)
+			if err != nil {
+				return domain.Item{}, fmt.Errorf("error creating item in local cache: %w", err)
+			}
+			_, err = s.distributedCache.Create(ctx, item)
+			if err != nil {
+				return domain.Item{}, fmt.Errorf("error creating item in distributed cache: %w", err)
+			}
+
+			return item, nil
 		}
 
-		_, err = s.cache.Create(ctx, item)
-		if err != nil {
-			return domain.Item{}, fmt.Errorf("error creating item in cache: %w", err)
-		}
-
+		s.localCache.Create(ctx, item)
 		return item, nil
 	}
 	return item, nil
@@ -123,9 +140,13 @@ func (s *ItemsServiceImpl) Update(ctx context.Context, id string, item domain.It
 
 	// TODO: Guardar en cache
 
-	_, err = s.cache.Update(ctx, id, item)
+	_, err = s.distributedCache.Update(ctx, id, item)
 	if err != nil {
-		return domain.Item{}, fmt.Errorf("error updating item in cache: %w", err)
+		return domain.Item{}, fmt.Errorf("error updating item in distributed cache: %w", err)
+	}
+	_, err = s.localCache.Update(ctx, id, item)
+	if err != nil {
+		return domain.Item{}, fmt.Errorf("error updating item in local cache: %w", err)
 	}
 
 	//publicar evento de actualización
@@ -141,9 +162,13 @@ func (s *ItemsServiceImpl) Update(ctx context.Context, id string, item domain.It
 // Consigna 4: Validar ID antes de eliminar
 func (s *ItemsServiceImpl) Delete(ctx context.Context, id string) error {
 	// TODO: Borrar de cache
-	err := s.cache.Delete(ctx, id)
+	err := s.localCache.Delete(ctx, id)
 	if err != nil {
-		return fmt.Errorf("error deleting item from cache: %w", err)
+		return fmt.Errorf("error deleting item from local cache: %w", err)
+	}
+	err = s.distributedCache.Delete(ctx, id)
+	if err != nil {
+		return fmt.Errorf("error deleting item from distributed cache: %w", err)
 	}
 
 	err = s.publisher.Publish(ctx, "delete", id)
