@@ -61,12 +61,15 @@ func (r MemcachedItemsRepository) Update(ctx context.Context, id string, item do
 		return domain.Item{}, fmt.Errorf("error marshalling item to JSON: %w", err)
 	}
 
-	if err := r.client.Replace(&memcache.Item{
-		Key:        id,
-		Value:      bytes,
-		Expiration: int32(r.ttl.Seconds()),
-	}); err != nil {
-		return domain.Item{}, fmt.Errorf("error replacing item in memcached: %w", err)
+	if _, err := r.client.Get(id); err == nil {
+
+		if err := r.client.Replace(&memcache.Item{
+			Key:        id,
+			Value:      bytes,
+			Expiration: int32(r.ttl.Seconds()),
+		}); err != nil {
+			return domain.Item{}, fmt.Errorf("error replacing item in memcached: %w", err)
+		}
 	}
 	return item, nil
 }

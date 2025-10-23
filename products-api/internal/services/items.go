@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 	"products-api/internal/domain"
 	"strings"
 )
@@ -12,8 +11,6 @@ import (
 // ItemsRepository define las operaciones de datos para Items
 // Patrón Repository: abstrae el acceso a datos del resto de la aplicación
 type ItemsRepository interface {
-	// List retorna items de la base de datos en base a los filtros
-	List(ctx context.Context, filters domain.SearchFilters) (domain.PaginatedResponse, error)
 
 	// Create inserta un nuevo item en DB
 	Create(ctx context.Context, item domain.Item) (domain.Item, error)
@@ -32,35 +29,23 @@ type ItemsPublisher interface { //genera mensajes para rabbit
 	Publish(ctx context.Context, action string, itemID string) error
 }
 
-type ItemsConsumer interface { //consume mensajes de rabbit
-	Consume(ctx context.Context, handler func(ctx context.Context, message ItemEvent) error) error
-}
-
 type ItemsServiceImpl struct {
-	repository ItemsRepository // Inyección de dependencia
-	cache      ItemsRepository // Inyección de dependencia
-	publisher  ItemsPublisher
-	consumer   ItemsConsumer
+	repository       ItemsRepository // Inyección de dependencia
+	localCache       ItemsRepository // Inyección de dependencia
+	distributedCache ItemsRepository // Inyección de dependencia
+	publisher        ItemsPublisher
 }
 
 // NewItemsService crea una nueva instancia del service
 // Pattern: Dependency Injection - recibe dependencies como parámetros
-func NewItemsService(repository ItemsRepository, cache ItemsRepository, publisher ItemsPublisher, consumer ItemsConsumer) ItemsServiceImpl {
+func NewItemsService(repository ItemsRepository, localCache ItemsRepository, distributedCache ItemsRepository, publisher ItemsPublisher) ItemsServiceImpl {
 	return ItemsServiceImpl{
-		repository: repository,
-		cache:      cache,
-		publisher:  publisher,
-		consumer:   consumer,
+		repository:       repository,
+		localCache:       localCache,
+		distributedCache: distributedCache,
+		publisher:        publisher,
 	}
 }
-
-// List obtiene todos los items
-// ✅ IMPLEMENTADO - Delegación simple al repository
-/*func (s *ItemsServiceImpl) List(ctx context.Context, filters domain.SearchFilters) (domain.PaginatedResponse, error) {
-	// En este caso, no hay lógica de negocio especial
-	// Solo delegamos al search repository
-	return s.search.List(ctx, filters)
-}*/
 
 // Create valida y crea un nuevo item
 // Consigna 1: Validar name no vacío y price >= 0
@@ -74,9 +59,13 @@ func (s *ItemsServiceImpl) Create(ctx context.Context, item domain.Item) (domain
 		return domain.Item{}, fmt.Errorf("error publishing item creation: %w", err)
 	}
 
-	_, err = s.cache.Create(ctx, created)
+	_, err = s.distributedCache.Create(ctx, created)
 	if err != nil {
-		return domain.Item{}, fmt.Errorf("error creating item in cache: %w", err)
+		return domain.Item{}, fmt.Errorf("error creating item in distributed cache: %w", err)
+	}
+	_, err = s.localCache.Create(ctx, created)
+	if err != nil {
+		return domain.Item{}, fmt.Errorf("error creating item in local cache: %w", err)
 	}
 
 	return created, nil
@@ -85,18 +74,29 @@ func (s *ItemsServiceImpl) Create(ctx context.Context, item domain.Item) (domain
 // GetByID obtiene un item por su ID
 // Consigna 2: Validar formato de ID antes de consultar DB
 func (s *ItemsServiceImpl) GetByID(ctx context.Context, id string) (domain.Item, error) {
-	item, err := s.cache.GetByID(ctx, id)
+	item, err := s.localCache.GetByID(ctx, id)
 	if err != nil {
-		item, err := s.repository.GetByID(ctx, id)
+		item, err := s.distributedCache.GetByID(ctx, id)
+
 		if err != nil {
-			return domain.Item{}, fmt.Errorf("error getting item from repository: %w", err)
+			item, err := s.repository.GetByID(ctx, id)
+			if err != nil {
+				return domain.Item{}, fmt.Errorf("error getting item from repository: %w", err)
+			}
+
+			_, err = s.localCache.Create(ctx, item)
+			if err != nil {
+				return domain.Item{}, fmt.Errorf("error creating item in local cache: %w", err)
+			}
+			_, err = s.distributedCache.Create(ctx, item)
+			if err != nil {
+				return domain.Item{}, fmt.Errorf("error creating item in distributed cache: %w", err)
+			}
+
+			return item, nil
 		}
 
-		_, err = s.cache.Create(ctx, item)
-		if err != nil {
-			return domain.Item{}, fmt.Errorf("error creating item in cache: %w", err)
-		}
-
+		s.localCache.Create(ctx, item)
 		return item, nil
 	}
 	return item, nil
@@ -123,9 +123,13 @@ func (s *ItemsServiceImpl) Update(ctx context.Context, id string, item domain.It
 
 	// TODO: Guardar en cache
 
-	_, err = s.cache.Update(ctx, id, item)
+	_, err = s.distributedCache.Update(ctx, id, item)
 	if err != nil {
-		return domain.Item{}, fmt.Errorf("error updating item in cache: %w", err)
+		return domain.Item{}, fmt.Errorf("error updating item in distributed cache: %w", err)
+	}
+	_, err = s.localCache.Update(ctx, id, item)
+	if err != nil {
+		return domain.Item{}, fmt.Errorf("error updating item in local cache: %w", err)
 	}
 
 	//publicar evento de actualización
@@ -141,9 +145,13 @@ func (s *ItemsServiceImpl) Update(ctx context.Context, id string, item domain.It
 // Consigna 4: Validar ID antes de eliminar
 func (s *ItemsServiceImpl) Delete(ctx context.Context, id string) error {
 	// TODO: Borrar de cache
-	err := s.cache.Delete(ctx, id)
+	err := s.localCache.Delete(ctx, id)
 	if err != nil {
-		return fmt.Errorf("error deleting item from cache: %w", err)
+		return fmt.Errorf("error deleting item from local cache: %w", err)
+	}
+	err = s.distributedCache.Delete(ctx, id)
+	if err != nil {
+		return fmt.Errorf("error deleting item from distributed cache: %w", err)
 	}
 
 	err = s.publisher.Publish(ctx, "delete", id)
@@ -180,62 +188,4 @@ func (s *ItemsServiceImpl) validateItem(item domain.Item) error {
 type ItemEvent struct {
 	Action string `json:"action"` // "create", "update", "delete"
 	ItemID string `json:"item_id"`
-}
-
-func (s *ItemsServiceImpl) InitConsumer(ctx context.Context) {
-	// Iniciar Go routine para el consumer
-	slog.Info("🐰 Starting RabbitMQ consumer...")
-
-	if err := s.consumer.Consume(ctx, s.handleMessage); err != nil {
-		slog.Error("❌ Error in RabbitMQ consumer: %v", err)
-	}
-	slog.Info("🐰 RabbitMQ consumer stopped.")
-}
-
-// handleMessage procesa los mensajes recibidos de RabbitMQ
-func (s *ItemsServiceImpl) handleMessage(ctx context.Context, message ItemEvent) error {
-	slog.Info("📨 Processing message",
-		slog.String("action", message.Action),
-		slog.String("item_id", message.ItemID),
-	)
-
-	switch message.Action {
-	case "create":
-		slog.Info("✅ Item created", slog.String("item_id", message.ItemID))
-
-		// Indexar el item en Solr para búsquedas
-		// Esto se debe reemplazar por llamdada HTTP cuando los servicios se desacoplan
-		/*item, err := s.repository.GetByID(ctx, message.ItemID)
-		if err != nil {
-			slog.Error("❌ Error getting item for indexing",
-				slog.String("item_id", message.ItemID),
-				slog.String("error", err.Error()))
-			return fmt.Errorf("error getting item for indexing: %w", err)
-		}
-		*/
-
-		/*
-			if _, err := s.search.Create(ctx, item); err != nil {
-				slog.Error("❌ Error indexing item in search",
-					slog.String("item_id", message.ItemID),
-					slog.String("error", err.Error()))
-				return fmt.Errorf("error indexing item in search: %w", err)
-			}
-		*/
-
-		slog.Info("🔍 Item indexed in search engine", slog.String("item_id", message.ItemID))
-
-	case "update":
-		slog.Info("✏️ Item updated", slog.String("item_id", message.ItemID))
-		// Invalidar cache si es necesario
-
-	case "delete":
-		slog.Info("🗑️ Item deleted", slog.String("item_id", message.ItemID))
-		// Limpiar cache, logs, etc.
-
-	default:
-		slog.Info("⚠️ Unknown action", slog.String("action", message.Action))
-	}
-
-	return nil
 }

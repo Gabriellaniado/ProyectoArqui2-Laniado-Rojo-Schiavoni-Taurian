@@ -75,18 +75,6 @@ func (r *MySQLUsersRepository) GetByEmail(ctx context.Context, email string) (do
 	return daoUser.ToDomain(), nil
 }
 
-// Update actualiza un usuario existente
-/*func (r *MySQLUsersRepository) Update(ctx context.Context, id int, user domain.User) (domain.User, error) {
-	daoUser := dao.FromDomain(user)
-	daoUser.ID = id
-
-	if err := r.db.WithContext(ctx).Omit("created_at").Save(&daoUser).Error; err != nil {
-		return domain.User{}, err
-	}
-
-	return daoUser.ToDomain(), nil
-}*/
-// Update actualiza un usuario existente
 func (r *MySQLUsersRepository) Update(ctx context.Context, id int, user domain.User) (domain.UserResponse, error) {
 	// Preparar mapa de campos a actualizar
 	updates := map[string]interface{}{

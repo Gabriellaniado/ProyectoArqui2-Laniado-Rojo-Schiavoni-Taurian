@@ -70,37 +70,6 @@ func (r *MongoItemsRepository) GetByID(ctx context.Context, id string) (domain.I
 
 // Devuelve items paginados
 
-func (r *MongoItemsRepository) List(ctx context.Context, filters domain.SearchFilters) (domain.PaginatedResponse, error) {
-	// Timeout para evitar que la operación se cuelgue
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
-
-	// 🔍 Find() sin filtros retorna todos los documentos de la colección
-	cur, err := r.col.Find(ctx, bson.M{}) // no tiene filtro
-	if err != nil {
-		return domain.PaginatedResponse{}, err
-	}
-	defer cur.Close(ctx) // libera recursos
-
-	// 📦 Decodificar resultados en slice de DAO (modelo DB)
-	// Usamos el modelo DAO porque maneja ObjectID y tags BSON
-	var daoItems []dao.Item
-	if err := cur.All(ctx, &daoItems); err != nil {
-		return domain.PaginatedResponse{}, err
-	}
-	// Separamos los modelos: DAO para DB, Domain para lógica de negocio
-	domainItems := make([]domain.Item, len(daoItems))
-	for i, daoItem := range daoItems {
-		domainItems[i] = daoItem.ToDomain() // Función definida en dao/Item.go
-	}
-
-	return domain.PaginatedResponse{
-		Page:    1,
-		Count:   len(domainItems),
-		Results: domainItems,
-	}, nil
-}
-
 func (r *MongoItemsRepository) Create(ctx context.Context, item domain.Item) (domain.Item, error) {
 	itemDAO := dao.FromDomain(item) // Convertir a DAO para manejar ObjectID y BSON
 	itemDAO.ID = primitive.NewObjectID()
