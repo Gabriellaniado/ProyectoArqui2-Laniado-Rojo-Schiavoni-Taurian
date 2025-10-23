@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"log"
 	"products-api/internal/domain"
 	"time"
 
@@ -39,6 +40,7 @@ func (r ItemsLocalCacheRepository) GetByID(ctx context.Context, id string) (doma
 	if !ok {
 		return domain.Item{}, fmt.Errorf("error asserting item type from cache")
 	}
+	log.Printf("item found in cache: %v", item)
 	return item, nil
 }
 
