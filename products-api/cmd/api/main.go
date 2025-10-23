@@ -57,7 +57,7 @@ func main() {
 
 	// Capa de lógica de negocio: validaciones, transformaciones
 	itemService := services.NewItemsService(itemsMongoRepo, itemsMemcachedRepo, itemsQueue, itemsQueue)
-	go itemService.InitConsumer(ctx)
+	//go itemService.InitConsumer(ctx)
 
 	// Capa de controladores: maneja HTTP requests/responses
 	itemController := controllers.NewItemsController(&itemService)
