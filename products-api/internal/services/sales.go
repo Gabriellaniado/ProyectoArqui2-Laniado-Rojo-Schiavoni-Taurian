@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"products-api/internal/domain"
 	"strings"
 )
@@ -30,16 +31,18 @@ type SalesRepository interface {
 
 // SalesServiceImpl implementa SalesService
 type SalesServiceImpl struct {
-	repository SalesRepository // Inyección de dependencia
-	cache      SalesRepository // Inyección de dependencia
+	repository  SalesRepository // Inyección de dependencia
+	cache       SalesRepository // Inyección de dependencia
+	usersAPIURL string
 }
 
 // NewSalesService crea una nueva instancia del service
 // Pattern: Dependency Injection - recibe dependencies como parámetros
 func NewSalesService(repository SalesRepository, cache SalesRepository) SalesServiceImpl {
 	return SalesServiceImpl{
-		repository: repository,
-		cache:      cache,
+		repository:  repository,
+		cache:       cache,
+		usersAPIURL: "http://localhost:8082",
 	}
 }
 
@@ -152,6 +155,64 @@ func (s *SalesServiceImpl) validateSale(sale domain.Sales) error {
 	// TotalPrice debe ser >= 0
 	if sale.TotalPrice < 0 {
 		return errors.New("total_price must be greater than or equal to 0")
+	}
+
+	return nil
+}
+
+// VerifyToken verifica un token llamando al users-api
+func (s *SalesServiceImpl) VerifyToken(ctx context.Context, token string) error {
+	if strings.TrimSpace(token) == "" {
+		return errors.New("token is required")
+	}
+
+	url := fmt.Sprintf("%s/verify-token", s.usersAPIURL)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, nil)
+	if err != nil {
+		return fmt.Errorf("error creating request: %w", err)
+	}
+
+	req.Header.Set("Authorization", token)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("error calling users-api: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return errors.New("invalid or expired token")
+	}
+
+	return nil
+}
+
+// VerifyAdminToken verifica un token de admin llamando al users-api
+func (s *SalesServiceImpl) VerifyAdminToken(ctx context.Context, token string) error {
+	if strings.TrimSpace(token) == "" {
+		return errors.New("token is required")
+	}
+
+	url := fmt.Sprintf("%s/verify-admin-token", s.usersAPIURL)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, nil)
+	if err != nil {
+		return fmt.Errorf("error creating request: %w", err)
+	}
+
+	req.Header.Set("Authorization", token)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("error calling users-api: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return errors.New("invalid admin token or insufficient permissions")
 	}
 
 	return nil
