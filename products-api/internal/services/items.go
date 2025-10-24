@@ -129,24 +129,9 @@ func (s *ItemsServiceImpl) Update(ctx context.Context, id string, item domain.It
 
 	// TODO: Actualizar en DB
 
-	_, err := s.repository.Update(ctx, id, item)
+	updated, err := s.repository.Update(ctx, id, item)
 	if err != nil {
 		return domain.Item{}, fmt.Errorf("error updating item in repository: %w", err)
-	}
-
-	if err := s.publisher.Publish(ctx, "update", id); err != nil {
-		return domain.Item{}, fmt.Errorf("error publishing item update: %w", err)
-	}
-
-	// TODO: Guardar en cache
-
-	_, err = s.distributedCache.Update(ctx, id, item)
-	if err != nil {
-		return domain.Item{}, fmt.Errorf("error updating item in distributed cache: %w", err)
-	}
-	_, err = s.localCache.Update(ctx, id, item)
-	if err != nil {
-		return domain.Item{}, fmt.Errorf("error updating item in local cache: %w", err)
 	}
 
 	//publicar evento de actualización
@@ -155,7 +140,16 @@ func (s *ItemsServiceImpl) Update(ctx context.Context, id string, item domain.It
 		return domain.Item{}, fmt.Errorf("error publishing item update: %w", err)
 	}
 
-	return domain.Item{}, nil
+	// TODO: Guardar en cache
+
+	if _, err = s.distributedCache.Update(ctx, id, updated); err != nil {
+		slog.Warn("⚠️ Error updating item in distributed cache", slog.String("item_id", id), slog.String("error", err.Error()))
+	}
+	if _, err = s.localCache.Update(ctx, id, updated); err != nil {
+		slog.Warn("⚠️ Error updating item in local cache", slog.String("item_id", id), slog.String("error", err.Error()))
+	}
+
+	return updated, nil
 }
 
 // Delete elimina un item por ID

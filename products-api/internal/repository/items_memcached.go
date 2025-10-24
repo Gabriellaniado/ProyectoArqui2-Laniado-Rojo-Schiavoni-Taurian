@@ -52,10 +52,15 @@ func (r MemcachedItemsRepository) GetByID(ctx context.Context, id string) (domai
 	if err := json.Unmarshal(bytes.Value, &item); err != nil {
 		return domain.Item{}, fmt.Errorf("error unmarshalling item from JSON: %w", err)
 	}
+	if item.ID == "" {
+		item.ID = id
+	}
 	return item, nil
 }
 
 func (r MemcachedItemsRepository) Update(ctx context.Context, id string, item domain.Item) (domain.Item, error) {
+	item.ID = id
+
 	bytes, err := json.Marshal(item)
 	if err != nil {
 		return domain.Item{}, fmt.Errorf("error marshalling item to JSON: %w", err)

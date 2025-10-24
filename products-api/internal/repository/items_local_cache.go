@@ -39,10 +39,15 @@ func (r ItemsLocalCacheRepository) GetByID(ctx context.Context, id string) (doma
 	if !ok {
 		return domain.Item{}, fmt.Errorf("error asserting item type from cache")
 	}
+	if item.ID == "" {
+		item.ID = id
+	}
 	return item, nil
 }
 
 func (r ItemsLocalCacheRepository) Update(ctx context.Context, id string, item domain.Item) (domain.Item, error) {
+	item.ID = id
+
 	r.client.Set(id, item, r.ttl)
 	return item, nil
 }
