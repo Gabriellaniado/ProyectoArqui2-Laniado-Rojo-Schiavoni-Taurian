@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 	"fmt"
-	"serch-list-api/internal/clients"
-	"serch-list-api/internal/domain"
+	"search-list-api/internal/clients"
+	"search-list-api/internal/domain"
 	"strings"
 )
 

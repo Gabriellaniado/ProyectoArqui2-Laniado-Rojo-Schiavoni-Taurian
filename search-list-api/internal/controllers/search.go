@@ -3,23 +3,23 @@ package controllers
 import (
 	"context"
 	"net/http"
-	"serch-list-api/internal/domain"
+	"search-list-api/internal/domain"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-type SerchService interface {
+type SearchService interface {
 	List(ctx context.Context, filters domain.SearchFilters) (domain.PaginatedResponse, error)
 }
 
-type SerchController struct {
-	service SerchService // Inyección de dependencia
+type SearchController struct {
+	service SearchService // Inyección de dependencia
 }
 
-func NewSerchController(SerchService SerchService) *SerchController {
-	return &SerchController{
-		service: SerchService,
+func NewSearchController(SearchService SearchService) *SearchController {
+	return &SearchController{
+		service: SearchService,
 	}
 }
 
@@ -28,7 +28,7 @@ const (
 	listDefaultCount = 10
 )
 
-func (c *SerchController) List(ctx *gin.Context) {
+func (c *SearchController) List(ctx *gin.Context) {
 	// Parsear filtros desde query params
 	// Ejemplo GET /items?q=iphone&minPrice=100&maxPrice=500&page=2&count=20&sortBy=price%20desc
 	filters := domain.SearchFilters{}

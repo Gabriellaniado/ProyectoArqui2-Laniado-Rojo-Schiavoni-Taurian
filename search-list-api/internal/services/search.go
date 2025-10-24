@@ -7,10 +7,10 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
-	"serch-list-api/internal/domain"
+	"search-list-api/internal/domain"
 )
 
-type SerchRepository interface {
+type SearchRepository interface {
 	List(ctx context.Context, filters domain.SearchFilters) (domain.PaginatedResponse, error)
 	Create(ctx context.Context, item domain.Item) (domain.Item, error)
 	Update(ctx context.Context, id string, item domain.Item) (domain.Item, error)
@@ -21,19 +21,19 @@ type ItemsConsumer interface { //consume mensajes de rabbit
 	Consume(ctx context.Context, handler func(ctx context.Context, message ItemEvent) error) error
 }
 
-type SerchServiceImpl struct {
-	repo     SerchRepository
+type SearchServiceImpl struct {
+	repo     SearchRepository
 	consumer ItemsConsumer
 }
 
-func NewSerchService(repo SerchRepository, consumer ItemsConsumer) *SerchServiceImpl {
-	return &SerchServiceImpl{
+func NewSearchService(repo SearchRepository, consumer ItemsConsumer) *SearchServiceImpl {
+	return &SearchServiceImpl{
 		repo:     repo,
 		consumer: consumer,
 	}
 }
 
-func (s *SerchServiceImpl) List(ctx context.Context, filters domain.SearchFilters) (domain.PaginatedResponse, error) {
+func (s *SearchServiceImpl) List(ctx context.Context, filters domain.SearchFilters) (domain.PaginatedResponse, error) {
 	return s.repo.List(ctx, filters)
 }
 
@@ -42,7 +42,7 @@ type ItemEvent struct {
 	ItemID string `json:"item_id"`
 }
 
-func (s *SerchServiceImpl) InitConsumer(ctx context.Context) {
+func (s *SearchServiceImpl) InitConsumer(ctx context.Context) {
 	// Iniciar Go routine para el consumer
 	slog.Info("🐰 Starting RabbitMQ consumer...")
 
@@ -53,7 +53,7 @@ func (s *SerchServiceImpl) InitConsumer(ctx context.Context) {
 }
 
 // handleMessage procesa los mensajes recibidos de RabbitMQ
-func (s *SerchServiceImpl) handleMessage(ctx context.Context, message ItemEvent) error {
+func (s *SearchServiceImpl) handleMessage(ctx context.Context, message ItemEvent) error {
 	slog.Info("📨 Processing message",
 		slog.String("action", message.Action),
 		slog.String("item_id", message.ItemID),

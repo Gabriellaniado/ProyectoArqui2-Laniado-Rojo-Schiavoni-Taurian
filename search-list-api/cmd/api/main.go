@@ -4,12 +4,12 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"serch-list-api/internal/clients"
-	"serch-list-api/internal/config"
-	"serch-list-api/internal/controllers"
-	"serch-list-api/internal/middleware"
-	"serch-list-api/internal/repository"
-	"serch-list-api/internal/services"
+	"search-list-api/internal/clients"
+	"search-list-api/internal/config"
+	"search-list-api/internal/controllers"
+	"search-list-api/internal/middleware"
+	"search-list-api/internal/repository"
+	"search-list-api/internal/services"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -39,11 +39,11 @@ func main() {
 	)
 
 	// Capa de lógica de negocio: validaciones, transformaciones
-	SerchService := services.NewSerchService(itemsSolrRepo, itemsQueue)
-	go SerchService.InitConsumer(ctx)
+	SearchService := services.NewSearchService(itemsSolrRepo, itemsQueue)
+	go SearchService.InitConsumer(ctx)
 
 	// Capa de controladores: maneja HTTP requests/responses
-	SerchController := controllers.NewSerchController(SerchService)
+	SearchController := controllers.NewSearchController(SearchService)
 
 	// 🌐 Configurar router HTTP con Gin
 	router := gin.Default()
@@ -58,7 +58,7 @@ func main() {
 
 	// 📚 Rutas de Items API
 	// GET /items - listar los items con filtros(✅ implementado)
-	router.GET("/items", SerchController.List)
+	router.GET("/items", SearchController.List)
 
 	// Configuración del server HTTP
 	srv := &http.Server{

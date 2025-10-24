@@ -1,4 +1,4 @@
-module serch-list-api
+module search-list-api
 
 go 1.24.1
 

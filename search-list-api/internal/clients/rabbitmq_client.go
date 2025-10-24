@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"serch-list-api/internal/services"
+	"search-list-api/internal/services"
 	"time"
 
 	"github.com/google/uuid"

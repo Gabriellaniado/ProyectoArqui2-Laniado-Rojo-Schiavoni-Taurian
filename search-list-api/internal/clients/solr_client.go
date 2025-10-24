@@ -7,7 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
-	"serch-list-api/internal/domain"
+	"search-list-api/internal/domain"
 	"strings"
 	"time"
 )

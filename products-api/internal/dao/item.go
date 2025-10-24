@@ -14,6 +14,7 @@ type Item struct {
 	Description string             `bson:"description"`
 	Price       float64            `bson:"price"`
 	Stock       int                `bson:"stock"`
+	ImageURL    string             `bson:"image_url"`
 	CreatedAt   time.Time          `bson:"created_at"`
 	UpdatedAt   time.Time          `bson:"updated_at"`
 }
@@ -26,6 +27,7 @@ func (i Item) ToDomain() domain.Item {
 		Description: i.Description,
 		Price:       i.Price,
 		Stock:       i.Stock,
+		ImageURL:    i.ImageURL,
 		CreatedAt:   i.CreatedAt,
 		UpdatedAt:   i.UpdatedAt,
 	}
@@ -47,6 +49,7 @@ func FromDomain(domainItem domain.Item) Item {
 		Description: domainItem.Description,
 		Price:       domainItem.Price,
 		Stock:       domainItem.Stock,
+		ImageURL:    domainItem.ImageURL,
 		CreatedAt:   domainItem.CreatedAt,
 		UpdatedAt:   domainItem.UpdatedAt,
 	}

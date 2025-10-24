@@ -73,8 +73,9 @@ func (r *MongoItemsRepository) GetByID(ctx context.Context, id string) (domain.I
 func (r *MongoItemsRepository) Create(ctx context.Context, item domain.Item) (domain.Item, error) {
 	itemDAO := dao.FromDomain(item) // Convertir a DAO para manejar ObjectID y BSON
 	itemDAO.ID = primitive.NewObjectID()
-	itemDAO.CreatedAt = time.Now().UTC()
-	itemDAO.UpdatedAt = time.Now().UTC()
+	now := time.Now().UTC().Truncate(time.Millisecond)
+	itemDAO.CreatedAt = now
+	itemDAO.UpdatedAt = now
 
 	// Insertar en DB
 	res, err := r.col.InsertOne(ctx, itemDAO)
@@ -99,14 +100,39 @@ func (r *MongoItemsRepository) Update(ctx context.Context, id string, item domai
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	daoItem := dao.FromDomain(item)
+	// convertir el id string a ObjectID
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return domain.Item{}, errors.New("invalid ObjectID format")
+	}
 
-	_, err := r.col.UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": daoItem})
+	updateFields := bson.M{
+		"name":        item.Name,
+		"description": item.Description,
+		"price":       item.Price,
+		"stock":       item.Stock,
+		"category":    item.Category,
+		"image_url":   item.ImageURL,
+		"updated_at":  time.Now().UTC().Truncate(time.Millisecond), // Solo actualizar updated_at
+	}
+
+	_, err = r.col.UpdateOne(ctx, bson.M{"_id": objID}, bson.M{"$set": updateFields})
 	if err != nil {
 		return domain.Item{}, err
 	}
 
-	return item, nil
+	// obtener el documento actualizado y devolverlo como domain.Item (con id)
+	var updatedDAO dao.Item
+	if err := r.col.FindOne(ctx, bson.M{"_id": objID}).Decode(&updatedDAO); err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return domain.Item{}, errors.New("item not found")
+		}
+		return domain.Item{}, err
+	}
+
+	domainItem := updatedDAO.ToDomain()
+
+	return domainItem, nil
 }
 
 // Delete elimina un item por ID
