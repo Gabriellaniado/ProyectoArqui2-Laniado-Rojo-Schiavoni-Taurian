@@ -27,6 +27,7 @@ func NewSolrItemsRepository(host, port, core string) *SolrItemsRepository {
 // List retorna items desde Solr en base a los filtros
 func (r *SolrItemsRepository) List(ctx context.Context, filters domain.SearchFilters) (domain.PaginatedResponse, error) {
 	query := buildQuery(filters)
+
 	return r.client.Search(ctx, query, filters.Page, filters.Count)
 }
 
@@ -60,24 +61,42 @@ func (r *SolrItemsRepository) Delete(ctx context.Context, id string) error {
 func buildQuery(filters domain.SearchFilters) string {
 	var parts []string
 
-	// Si no hay filtros, devolvemos todo
-	if filters.ID == "" || filters.Name == "" && filters.MinPrice == nil && filters.MaxPrice == nil {
-		return "*:*"
-	}
-
-	// Filtro por ID
-	if filters.ID != "" {
-		parts = append(parts, fmt.Sprintf("id:%s", filters.ID))
-	}
-
-	// Filtro por nombre
 	if filters.Name != "" {
-		parts = append(parts, fmt.Sprintf("name:*%s*", filters.Name))
+		// 1. Separamos el string de búsqueda por espacios
+		// Ej: "mates argentinos" -> ["mates", "argentinos"]
+		terms := strings.Fields(filters.Name)
+
+		var nameParts []string
+		for _, term := range terms {
+			nameParts = append(nameParts, fmt.Sprintf("name:%s~1", term))
+		}
+
+		// 3. Unimos los términos con AND y los agrupamos
+		// Resultado: (name:mates~1 AND name:argentinos~1)
+		if len(nameParts) > 0 {
+			parts = append(parts, "("+strings.Join(nameParts, " AND ")+")")
+		}
+	}
+	// Filtro por categoría
+	if filters.Category != "" {
+		parts = append(parts, fmt.Sprintf("category:%s", filters.Category))
 	}
 
 	// Filtro por rango de precios
-	if filters.MinPrice != nil && filters.MaxPrice != nil {
-		parts = append(parts, fmt.Sprintf("price:[%f TO %f]", *filters.MinPrice, *filters.MaxPrice))
+	if filters.MinPrice != nil || filters.MaxPrice != nil {
+		minStr := "*"
+		maxStr := "*"
+
+		if filters.MinPrice != nil {
+			// Usamos %g para un formato de float más limpio (ej. 100)
+			// en lugar de %f (ej. 100.000000)
+			minStr = fmt.Sprintf("%g", *filters.MinPrice)
+		}
+		if filters.MaxPrice != nil {
+			maxStr = fmt.Sprintf("%g", *filters.MaxPrice)
+		}
+
+		parts = append(parts, fmt.Sprintf("price:[%s TO %s]", minStr, maxStr))
 	}
 
 	return strings.Join(parts, " AND ")

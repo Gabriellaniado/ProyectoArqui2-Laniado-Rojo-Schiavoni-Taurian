@@ -1,0 +1,34 @@
+# --- Errores Fonéticos/Tipeo de YERBA ---
+llerba => yerba
+lerva => yerba
+ierva => yerba
+yerva => yerba
+herba => yerba
+hierva => yerba
+
+# --- Errores Fonéticos/Tipeo de BOMBILLA ---
+vombilla => bombilla
+bonbilla => bombilla
+bombisha => bombilla
+bombiya => bombilla
+
+# --- Sinónimos Reales y Equivalencias ---
+# (Cualquiera de estos términos se considera igual)
+
+# Pava / Tetera
+pava, tetera, caldera
+
+# Termo
+termo, thermos
+
+# Mate (el recipiente)
+# Porongo es la calabaza, un sinónimo común
+mate, porongo
+
+# Bolsos y Contenedores
+matera, bolso matero, portatermo, kit matero
+yerbero, yerbera, porta yerba, tarro yerba
+azucarero, azucarera, porta azucar, tarro azucar
+
+# Accesorios de limpieza
+limpia bombilla, limpiabombilla, cepillo bombilla
