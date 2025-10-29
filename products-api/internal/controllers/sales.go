@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"products-api/internal/domain"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -29,6 +30,10 @@ type SalesService interface {
 
 	// Delete elimina una venta por ID
 	Delete(ctx context.Context, id string) error
+
+	VerifyToken(ctx context.Context, token string) error
+
+	VerifyAdminToken(ctx context.Context, token string) error
 }
 
 // SalesController maneja las peticiones HTTP para Sales
@@ -204,4 +209,61 @@ func (c *SalesController) DeleteSale(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "sale deleted successfully",
 	})
+}
+
+func (c *SalesController) VerifyToken(ctx *gin.Context) {
+	// Recibir el token desde el header de la request
+	token := ctx.GetHeader("Authorization")
+	if token == "" {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Token is required"})
+		ctx.Abort()
+		return
+	}
+
+	// Limpiar el prefijo "Bearer " ---
+	tokenString := strings.TrimPrefix(token, "Bearer ")
+	if tokenString == token {
+		// Si no había prefijo "Bearer ", el token está mal formado o no es Bearer
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token format"})
+		ctx.Abort()
+		return
+	}
+	// Llamar al servicio de verify token
+	err := c.service.VerifyToken(ctx.Request.Context(), tokenString)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		ctx.Abort()
+		return
+	}
+
+	// Token válido, continuar con la siguiente función
+	ctx.Next()
+}
+
+func (c *SalesController) VerifyAdminToken(ctx *gin.Context) {
+	// Recibir el token desde el header de la request
+	token := ctx.GetHeader("Authorization")
+	if token == "" {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Token is required"})
+		ctx.Abort()
+		return
+	}
+
+	// Limpiar el prefijo "Bearer " ---
+	tokenString := strings.TrimPrefix(token, "Bearer ")
+	if tokenString == token {
+		// Si no había prefijo "Bearer ", el token está mal formado o no es Bearer
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token format"})
+		ctx.Abort()
+		return
+	}
+	// Llamar al servicio de verify admin token
+	err := c.service.VerifyAdminToken(ctx.Request.Context(), tokenString)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid admin token or insufficient permissions"})
+		ctx.Abort()
+		return
+	}
+	// Token válido, continuar con la siguiente función
+	ctx.Next()
 }

@@ -13,7 +13,7 @@ services:
         condition: service_healthy # Espera a que el healthcheck de la DB pase
     environment:
       # Variables de entorno para MySQL
-      - PORT=8080
+      - PORT=8082
       - DB_HOST=db
       - DB_PORT=3306
       - DB_USER=appuser

@@ -166,7 +166,7 @@ func (s *SalesServiceImpl) VerifyToken(ctx context.Context, token string) error 
 		return errors.New("token is required")
 	}
 
-	url := fmt.Sprintf("%s/verify-token", s.usersAPIURL)
+	url := fmt.Sprintf("%s/auth/verify-token", s.usersAPIURL)
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, nil)
 	if err != nil {
 		return fmt.Errorf("error creating request: %w", err)
@@ -195,7 +195,7 @@ func (s *SalesServiceImpl) VerifyAdminToken(ctx context.Context, token string) e
 		return errors.New("token is required")
 	}
 
-	url := fmt.Sprintf("%s/verify-admin-token", s.usersAPIURL)
+	url := fmt.Sprintf("%s/auth/verify-admin-token", s.usersAPIURL)
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, nil)
 	if err != nil {
 		return fmt.Errorf("error creating request: %w", err)
