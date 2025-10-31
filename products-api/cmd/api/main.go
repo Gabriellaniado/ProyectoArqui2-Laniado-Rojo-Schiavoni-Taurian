@@ -61,9 +61,6 @@ func main() {
 	// Capa de controladores: maneja HTTP requests/responses
 	itemController := controllers.NewItemsController(&itemService)
 
-	// Cache (ejercicio: ajustar TTL y agregar "índice" de claves)
-	// cache := cache.NewMemcached(memAddr)
-
 	// ========================================
 	// SALES - Configuración
 	// ========================================
@@ -71,15 +68,11 @@ func main() {
 	// Repositorio MongoDB para Sales
 	salesMongoRepo := repository.NewMongoSalesRepository(ctx, cfg.Mongo.URI, cfg.Mongo.DB, "sales")
 
-	// Repositorio de cache para Sales (Memcached)
-	salesMemcachedRepo := repository.NewMemcachedSalesRepository(
-		cfg.Memcached.Host,
-		cfg.Memcached.Port,
-		time.Duration(cfg.Memcached.TTLSeconds)*time.Second,
-	)
+	// Repositorio de cache local para Sales (Cache)
+	salesLocalCacheRepo := repository.NewSalesLocalCacheRepository(30 * time.Second)
 
-	// Capa de lógica de negocio para Sales
-	salesService := services.NewSalesService(salesMongoRepo, salesMemcachedRepo)
+	// Capa de lógica de negocio para Sales (inyectamos itemService para calcular precios)
+	salesService := services.NewSalesService(salesMongoRepo, salesLocalCacheRepo, &itemService)
 
 	// Capa de controladores para Sales
 	salesController := controllers.NewSalesController(&salesService)

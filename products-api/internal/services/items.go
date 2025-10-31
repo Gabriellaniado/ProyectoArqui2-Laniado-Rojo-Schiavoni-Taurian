@@ -9,6 +9,21 @@ import (
 	"strings"
 )
 
+type ItemsService interface {
+
+	// Create valida y crea un nuevo item
+	Create(ctx context.Context, item domain.Item) (domain.Item, error)
+
+	// GetByID obtiene un item por su ID
+	GetByID(ctx context.Context, id string) (domain.Item, error)
+
+	// Update actualiza un item existente
+	Update(ctx context.Context, id string, item domain.Item) (domain.Item, error)
+
+	// Delete elimina un item por ID
+	Delete(ctx context.Context, id string) error
+}
+
 // ItemsRepository define las operaciones de datos para Items
 // Patrón Repository: abstrae el acceso a datos del resto de la aplicación
 type ItemsRepository interface {
