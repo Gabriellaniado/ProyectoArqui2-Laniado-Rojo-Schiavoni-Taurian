@@ -119,8 +119,8 @@ func (s *ItemsServiceImpl) GetByID(ctx context.Context, id string) (domain.Item,
 // Consigna 3: Validar campos antes de actualizar
 func (s *ItemsServiceImpl) Update(ctx context.Context, id string, item domain.Item) (domain.Item, error) {
 
-	if item.Name == "" && item.Category == "" && item.Description == "" && item.Price == 0 && item.Stock == 0 {
-		return domain.Item{}, fmt.Errorf("error, all fields are/ empty")
+	if item.Name == "" || item.Category == "" || item.Description == "" || item.Price == 0 || item.Stock == 0 {
+		return domain.Item{}, fmt.Errorf("error, all fields need to be filled")
 	}
 	if item.Price < 0 {
 		return domain.Item{}, fmt.Errorf("error, the price cannot be negative")
