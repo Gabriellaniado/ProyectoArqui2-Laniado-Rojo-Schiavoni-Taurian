@@ -11,6 +11,7 @@ import (
 // ItemsService define la lógica de negocio para Items
 // Capa intermedia entre Controllers (HTTP) y Repository (datos)
 // Responsabilidades: validaciones, transformaciones, reglas de negocio
+
 type ItemsService interface {
 
 	// Create valida y crea un nuevo item

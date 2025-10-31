@@ -65,26 +65,6 @@ func (r *MongoSalesRepository) GetByID(ctx context.Context, id string) (domain.S
 	return daoSale.ToDomain(), nil
 }
 
-// GetBySaleID obtiene una venta por su SaleID (ID de negocio)
-func (r *MongoSalesRepository) GetBySaleID(ctx context.Context, saleID string) (domain.Sales, error) {
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
-
-	var daoSale dao.Sales
-	filter := bson.M{"sale_id": saleID}
-	err := r.col.FindOne(ctx, filter).Decode(&daoSale)
-	if err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			return domain.Sales{}, errors.New("sale not found")
-		}
-		return domain.Sales{}, err
-	}
-
-	return daoSale.ToDomain(), nil
-}
-
-// En internal/repository/sales_mongo.go
-
 // GetByCustomerID obtiene todas las ventas de un cliente específico
 func (r *MongoSalesRepository) GetByCustomerID(ctx context.Context, customerID string) ([]domain.Sales, error) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)

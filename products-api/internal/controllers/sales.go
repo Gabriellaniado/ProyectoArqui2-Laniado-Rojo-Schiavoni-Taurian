@@ -16,7 +16,7 @@ import (
 type SalesService interface {
 
 	// Create valida y crea una nueva venta
-	Create(ctx context.Context, sale domain.Sales) (domain.Sales, error)
+	Create(ctx context.Context, sale domain.BodySales) (domain.Sales, error)
 
 	// GetByID obtiene una venta por su ID
 	GetByID(ctx context.Context, id string) (domain.Sales, error)
@@ -25,7 +25,7 @@ type SalesService interface {
 	GetByCustomerID(ctx context.Context, customerID string) ([]domain.Sales, error)
 
 	// Update actualiza una venta existente
-	Update(ctx context.Context, id string, sale domain.Sales) (domain.Sales, error)
+	Update(ctx context.Context, id string, sale domain.BodySales) (domain.Sales, error)
 
 	// Delete elimina una venta por ID
 	Delete(ctx context.Context, id string) error
@@ -77,9 +77,9 @@ func parseDate(dateStr string) (time.Time, error) {
 
 // CreateSale maneja POST /sales - Crea una nueva venta
 func (c *SalesController) CreateSale(ctx *gin.Context) {
-	var sale domain.Sales
+	var sale domain.BodySales
 	if err := ctx.ShouldBindJSON(&sale); err != nil {
-		// ❌ Error en el formato del JSON
+		// Error en el formato del JSON
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error":   "Invalid JSON format",
 			"details": err.Error(),
@@ -89,7 +89,7 @@ func (c *SalesController) CreateSale(ctx *gin.Context) {
 
 	created, err := c.service.Create(ctx.Request.Context(), sale)
 	if err != nil {
-		// ❌ Error interno del servidor o validación
+		// Error interno del servidor o validación
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error":   "Failed to create sale",
 			"details": err.Error(),
@@ -156,7 +156,7 @@ func (c *SalesController) GetSalesByCustomerID(ctx *gin.Context) {
 
 // UpdateSale maneja PUT /sales/:id - Actualiza venta existente
 func (c *SalesController) UpdateSale(ctx *gin.Context) {
-	var updatedSale domain.Sales
+	var updatedSale domain.BodySales
 
 	if err := ctx.ShouldBindJSON(&updatedSale); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
