@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Estos args se transforman en ENV del stage de build (Dockerfile)
+        VITE_APP_VERSION: ${VITE_APP_VERSION:-prod}
+        VITE_USERS_API: ${VITE_USERS_API:-http://host.docker.internal:8080}
+        VITE_SEARCH_API: ${VITE_SEARCH_API:-http://host.docker.internal:8081}
+        VITE_PRODUCTS_API: ${VITE_PRODUCTS_API:-http://host.docker.internal:8082}
+    ports:
+      - "8088:80"
+    # Si tenés proxy corporativo o certificados, montarlos aquí si hace falta
+    restart: unless-stopped
+

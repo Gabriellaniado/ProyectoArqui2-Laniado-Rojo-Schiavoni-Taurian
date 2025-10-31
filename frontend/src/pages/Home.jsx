@@ -1,3 +1,8 @@
 export default function Home() {
-    return <h1>Bienvenido a la tienda</h1>
+  return (
+    <section>
+      <h1>Bienvenido a Mates Store</h1>
+      <p className="muted">Descubrí mates, bombillas y accesorios con estilo natural.</p>
+    </section>
+  )
 }

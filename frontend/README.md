@@ -1,16 +1,40 @@
-# React + Vite
+# Frontend (React + Vite)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+App React para el e-commerce de mates.
 
-Currently, two official plugins are available:
+## Requisitos
+- Node 18+ y npm
+- Backends levantados (ver puertos en `.env.development`)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Variables de entorno
+Configurar los endpoints en `.env.development` (copiar de `.env.example` si hace falta):
 
-## React Compiler
+```
+VITE_USERS_API=http://localhost:8080
+VITE_SEARCH_API=http://localhost:8081
+VITE_PRODUCTS_API=http://localhost:8082
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Comandos
+- `npm install`
+- `npm run dev` (dev server)
+- `npm run build` (build producción)
+- `npm run preview` (previsualizar build local)
 
-## Expanding the ESLint configuration
+## Notas
+- Listado de productos usa Search/List API (`/items`).
+- Detalle de producto usa Products API (`/items/:id`).
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Docker
+
+- Build y run con Docker Compose (puerto 8088):
+  - `docker compose -f docker-compose.yml build`
+  - `docker compose -f docker-compose.yml up -d`
+  - App: `http://localhost:8088`
+
+- Endpoints configurables en tiempo de build (usando args VITE_):
+  - `VITE_USERS_API` (default `http://host.docker.internal:8080`)
+  - `VITE_SEARCH_API` (default `http://host.docker.internal:8081`)
+  - `VITE_PRODUCTS_API` (default `http://host.docker.internal:8082`)
+
+Si tus APIs corren en el host, `host.docker.internal` permite acceder desde el contenedor a servicios del host en Windows/macOS. En Linux podés reemplazarlo por la IP del host.
