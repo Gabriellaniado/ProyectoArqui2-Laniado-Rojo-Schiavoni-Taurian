@@ -84,6 +84,10 @@ func main() {
 	// Capa de controladores para Sales
 	salesController := controllers.NewSalesController(&salesService)
 
+	// Capa de lógica de negocio para Auth y controlador
+	authService := services.NewAuthService("http://localhost:8082")
+	authController := controllers.NewAuthController(authService)
+
 	// 🌐 Configurar router HTTP con Gin
 	router := gin.Default()
 
@@ -118,19 +122,19 @@ func main() {
 	//router.GET("/sales", salesController.List)
 
 	// POST /sales - crear nueva venta
-	router.POST("/sales", salesController.VerifyToken, salesController.CreateSale)
+	router.POST("/sales", authController.VerifyToken, salesController.CreateSale)
 
 	// GET /sales/:id - obtener venta por ID (MongoDB ObjectID)
-	router.GET("/sales/:id", salesController.VerifyAdminToken, salesController.GetSaleByID)
+	router.GET("/sales/:id", authController.VerifyAdminToken, salesController.GetSaleByID)
 
 	// GET /sales/customer/:customerID - obtener todas las ventas de un cliente
-	router.GET("/sales/customer/:customerID", salesController.VerifyAdminToken, salesController.GetSalesByCustomerID)
+	router.GET("/sales/customer/:customerID", authController.VerifyAdminToken, salesController.GetSalesByCustomerID)
 
 	// PUT /sales/:id - actualizar venta existente
-	router.PUT("/sales/:id", salesController.VerifyAdminToken, salesController.UpdateSale)
+	router.PUT("/sales/:id", authController.VerifyAdminToken, salesController.UpdateSale)
 
 	// DELETE /sales/:id - eliminar venta
-	router.DELETE("/sales/:id", salesController.VerifyAdminToken, salesController.DeleteSale)
+	router.DELETE("/sales/:id", authController.VerifyAdminToken, salesController.DeleteSale)
 
 	// Configuración del server HTTP
 	srv := &http.Server{
