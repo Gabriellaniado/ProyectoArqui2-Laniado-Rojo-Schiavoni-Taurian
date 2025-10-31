@@ -15,7 +15,7 @@ COPY . .
 RUN go build -o /users-api cmd/api/main.go
 
 # Exponer el puerto que usará la aplicación
-EXPOSE 8080
+EXPOSE 8082
 
 # Comando para correr la aplicación
 CMD [ "/users-api" ]

@@ -22,6 +22,8 @@ type UsersService interface {
 	Update(ctx context.Context, id string, user domain.User) (domain.UserResponse, error)
 	Delete(ctx context.Context, id string) error
 	Login(ctx context.Context, loginReq domain.LoginRequest) (domain.LoginResponse, error)
+	VerifyToken(token string) error
+	VerifyAdminToken(token string) error
 }
 
 type UsersController struct {
@@ -220,4 +222,39 @@ func (c *UsersController) Login(ctx *gin.Context) {
 
 	// 3. Si el login es exitoso, devolver la respuesta
 	ctx.JSON(http.StatusOK, response)
+}
+
+func (c *UsersController) VerifyToken(ctx *gin.Context) {
+	// recibo el token desde el header de la request
+	token := ctx.GetHeader("Authorization")
+	if token == "" {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Token is required"})
+		ctx.Abort()
+		return
+	}
+
+	// llamar al servicio de verify token a través de la interfaz
+	err := c.service.VerifyToken(token)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		ctx.Abort()
+		return
+	}
+}
+
+func (c *UsersController) VerifyAdminToken(ctx *gin.Context) {
+	// recibo el token desde el header de la request
+	token := ctx.GetHeader("Authorization")
+	if token == "" {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Token is required"})
+		ctx.Abort()
+		return
+	}
+	// llamar al servicio de verify admin token a través de la interfaz
+	err := c.service.VerifyAdminToken(token)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		ctx.Abort()
+		return
+	}
 }

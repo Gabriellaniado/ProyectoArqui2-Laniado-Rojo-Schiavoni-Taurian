@@ -20,17 +20,29 @@ type SalesRepository interface {
 
 // SalesServiceImpl implementa SalesService
 type SalesServiceImpl struct {
+<<<<<<< HEAD
 	repository   SalesRepository
 	localCache   SalesRepository
 	itemsService ItemsService
+=======
+	repository  SalesRepository // Inyección de dependencia
+	cache       SalesRepository // Inyección de dependencia
+	usersAPIURL string
+>>>>>>> main
 }
 
 // NewSalesService crea una nueva instancia del service
 func NewSalesService(repository SalesRepository, cache SalesRepository, itemsService ItemsService) SalesServiceImpl {
 	return SalesServiceImpl{
+<<<<<<< HEAD
 		repository:   repository,
 		localCache:   cache,
 		itemsService: itemsService,
+=======
+		repository:  repository,
+		cache:       cache,
+		usersAPIURL: "http://localhost:8082",
+>>>>>>> main
 	}
 }
 

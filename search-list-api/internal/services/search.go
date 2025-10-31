@@ -81,7 +81,15 @@ func (s *SearchServiceImpl) handleMessage(ctx context.Context, message ItemEvent
 		slog.Info("🔍 Item indexed in search engine", slog.String("item_id", message.ItemID))
 
 	case "update":
-		if _, err := s.repo.Update(ctx, message.ItemID, domain.Item{}); err != nil {
+		item, err := GetItemByID(message.ItemID)
+
+		if err != nil {
+			slog.Error("❌ Error getting item details",
+				slog.String("item_id", message.ItemID),
+				slog.String("error", err.Error()))
+			return fmt.Errorf("error getting item details: %w", err)
+		}
+		if _, err := s.repo.Update(ctx, message.ItemID, item); err != nil {
 			slog.Error("❌ Error updating item in search",
 				slog.String("item_id", message.ItemID),
 				slog.String("error", err.Error()))

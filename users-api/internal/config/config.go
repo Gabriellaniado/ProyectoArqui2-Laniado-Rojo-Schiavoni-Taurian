@@ -13,7 +13,7 @@ type Config struct {
 
 func Load() Config {
 	return Config{
-		Port:   getEnv("PORT", "8080"),
+		Port:   getEnv("PORT", "8082"),
 		DBHost: getEnv("DB_HOST", "localhost"),
 		DBPort: getEnv("DB_PORT", "3306"),
 		DBUser: getEnv("DB_USER", "root"),

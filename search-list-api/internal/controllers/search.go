@@ -33,7 +33,9 @@ func (c *SearchController) List(ctx *gin.Context) {
 	// Ejemplo GET /items?q=iphone&minPrice=100&maxPrice=500&page=2&count=20&sortBy=price%20desc
 	filters := domain.SearchFilters{}
 
-	filters.Name = ctx.Query("q")
+	filters.Name = ctx.Query("name")
+
+	filters.Category = ctx.Query("category")
 
 	if minPriceStr := ctx.Query("minPrice"); minPriceStr != "" {
 		if minPrice, err := strconv.ParseFloat(minPriceStr, 64); err == nil {

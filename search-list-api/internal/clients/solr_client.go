@@ -19,11 +19,13 @@ type SolrClient struct {
 }
 
 type SolrDocument struct {
-	ID        string    `json:"id"`
-	Name      []string  `json:"name"`
-	Price     []float64 `json:"price"`
-	CreatedAt []string  `json:"created_at"`
-	UpdatedAt []string  `json:"updated_at"`
+	ID          string    `json:"id"`
+	Name        []string  `json:"name"`
+	Price       []float64 `json:"price"`
+	Category    []string  `json:"category"`
+	Description []string  `json:"description"`
+	CreatedAt   []string  `json:"created_at"`
+	UpdatedAt   []string  `json:"updated_at"`
 }
 
 type SolrResponse struct {
@@ -56,11 +58,13 @@ func NewSolrClient(host, port, core string) *SolrClient {
 
 func (s *SolrClient) Index(ctx context.Context, item domain.Item) error {
 	doc := SolrDocument{
-		ID:        item.ID,
-		Name:      []string{item.Name},
-		Price:     []float64{item.Price},
-		CreatedAt: []string{item.CreatedAt.Format(time.RFC3339)},
-		UpdatedAt: []string{item.UpdatedAt.Format(time.RFC3339)},
+		ID:          item.ID,
+		Name:        []string{item.Name},
+		Price:       []float64{item.Price},
+		Category:    []string{item.Category},
+		Description: []string{item.Description},
+		CreatedAt:   []string{item.CreatedAt.Format(time.RFC3339)},
+		UpdatedAt:   []string{item.UpdatedAt.Format(time.RFC3339)},
 	}
 
 	data, err := json.Marshal([]SolrDocument{doc})
@@ -162,12 +166,24 @@ func (s *SolrClient) Search(ctx context.Context, query string, page int, count i
 			}
 		}
 
+		var category string
+		if len(doc.Category) > 0 {
+			category = doc.Category[0]
+		}
+
+		var description string
+		if len(doc.Description) > 0 {
+			description = doc.Description[0]
+		}
+
 		items[i] = domain.Item{
-			ID:        doc.ID,
-			Name:      name,
-			Price:     price,
-			CreatedAt: createdAt,
-			UpdatedAt: updatedAt,
+			ID:          doc.ID,
+			Name:        name,
+			Category:    category,
+			Price:       price,
+			Description: description,
+			CreatedAt:   createdAt,
+			UpdatedAt:   updatedAt,
 		}
 	}
 

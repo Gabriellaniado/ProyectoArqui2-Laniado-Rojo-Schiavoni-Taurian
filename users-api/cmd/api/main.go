@@ -71,6 +71,10 @@ func main() {
 	// POST /auth/login - login de usuario
 	router.POST("/auth/login", userController.Login)
 
+	router.POST("/auth/verify-token", userController.VerifyToken)
+
+	router.POST("/auth/verify-admin-token", userController.VerifyAdminToken)
+
 	// Configuración del server HTTP
 	srv := &http.Server{
 		Addr:              ":" + cfg.Port,
