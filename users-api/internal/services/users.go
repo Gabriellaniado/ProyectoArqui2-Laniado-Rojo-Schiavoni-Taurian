@@ -3,6 +3,8 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"users-api/internal/domain"
@@ -220,6 +222,24 @@ func (s *UsersServiceImpl) validateCreateUser(user domain.User) error {
 	}
 	if strings.TrimSpace(user.Password) == "" {
 		return ErrPasswordRequired
+	}
+	return nil
+}
+
+func (s *UsersServiceImpl) VerifyToken(token string) error {
+	err := utils.ValidateJWT(token)
+	if err != nil {
+		log.Println("Error al verificar el token")
+		return fmt.Errorf("failed to verify token: %w", err)
+	}
+	return nil
+}
+
+func (s *UsersServiceImpl) VerifyAdminToken(token string) error {
+	err := utils.ValidateAdminJWT(token)
+	if err != nil {
+		log.Println("Error al verificar el token de admin")
+		return fmt.Errorf("failed to verify admin token: %w", err)
 	}
 	return nil
 }
