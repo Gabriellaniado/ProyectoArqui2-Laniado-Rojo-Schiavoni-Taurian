@@ -51,6 +51,18 @@ func NewItemsService(repository ItemsRepository, localCache ItemsRepository, dis
 // Create valida y crea un nuevo item
 // Consigna 1: Validar name no vacío y price >= 0
 func (s *ItemsServiceImpl) Create(ctx context.Context, item domain.Item) (domain.Item, error) {
+
+	if item.Name == "" || item.Category == "" || item.Description == "" || item.Price == 0 || item.Stock == 0 {
+		return domain.Item{}, fmt.Errorf("error, all fields need to be filled")
+	}
+	if item.Price <= 0 {
+		return domain.Item{}, fmt.Errorf("error, the price cannot be negative")
+	}
+
+	if item.Stock <= 0 {
+		return domain.Item{}, fmt.Errorf("error, the stock cannot be negative")
+	}
+
 	created, err := s.repository.Create(ctx, item)
 	if err != nil {
 		return domain.Item{}, fmt.Errorf("error creating item in repository: %w", err)
@@ -106,6 +118,17 @@ func (s *ItemsServiceImpl) GetByID(ctx context.Context, id string) (domain.Item,
 // Update actualiza un item existente
 // Consigna 3: Validar campos antes de actualizar
 func (s *ItemsServiceImpl) Update(ctx context.Context, id string, item domain.Item) (domain.Item, error) {
+
+	if item.Name == "" && item.Category == "" && item.Description == "" && item.Price == 0 && item.Stock == 0 {
+		return domain.Item{}, fmt.Errorf("error, all fields are/ empty")
+	}
+	if item.Price < 0 {
+		return domain.Item{}, fmt.Errorf("error, the price cannot be negative")
+	}
+
+	if item.Stock < 0 {
+		return domain.Item{}, fmt.Errorf("error, the stock cannot be negative")
+	}
 
 	if err := s.validateItem(item); err != nil {
 		return domain.Item{}, fmt.Errorf("validation error: %w", err)
