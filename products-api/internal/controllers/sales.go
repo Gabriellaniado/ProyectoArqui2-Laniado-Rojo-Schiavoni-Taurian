@@ -2,10 +2,8 @@ package controllers
 
 import (
 	"context"
-	"errors"
 	"net/http"
 	"products-api/internal/domain"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -25,7 +23,7 @@ type SalesService interface {
 	GetByCustomerID(ctx context.Context, customerID string) ([]domain.Sales, error)
 
 	// Update actualiza una venta existente
-	Update(ctx context.Context, id string, sale domain.BodySales) (domain.Sales, error)
+	Update(ctx context.Context, id string, sale domain.UpdateBodySales) (domain.Sales, error)
 
 	// Delete elimina una venta por ID
 	Delete(ctx context.Context, id string) error
@@ -41,38 +39,11 @@ type SalesController struct {
 	service SalesService // Inyección de dependencia
 }
 
-/*
-const (
-	salesDefaultPage  = 1
-	salesDefaultCount = 10
-)
-*/
-
 // NewSalesController crea una nueva instancia del controller
 func NewSalesController(salesService SalesService) *SalesController {
 	return &SalesController{
 		service: salesService,
 	}
-}
-
-// parseDate es una función helper para parsear fechas en diferentes formatos
-func parseDate(dateStr string) (time.Time, error) {
-	// Intentar formato RFC3339 (2024-01-01T00:00:00Z)
-	if t, err := time.Parse(time.RFC3339, dateStr); err == nil {
-		return t, nil
-	}
-
-	// Intentar formato de solo fecha (2024-01-01)
-	if t, err := time.Parse("2006-01-02", dateStr); err == nil {
-		return t, nil
-	}
-
-	// Intentar formato con hora (2024-01-01 15:04:05)
-	if t, err := time.Parse("2006-01-02 15:04:05", dateStr); err == nil {
-		return t, nil
-	}
-
-	return time.Time{}, errors.New("invalid date format")
 }
 
 // CreateSale maneja POST /sales - Crea una nueva venta
@@ -156,7 +127,7 @@ func (c *SalesController) GetSalesByCustomerID(ctx *gin.Context) {
 
 // UpdateSale maneja PUT /sales/:id - Actualiza venta existente
 func (c *SalesController) UpdateSale(ctx *gin.Context) {
-	var updatedSale domain.BodySales
+	var updatedSale domain.UpdateBodySales
 
 	if err := ctx.ShouldBindJSON(&updatedSale); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{

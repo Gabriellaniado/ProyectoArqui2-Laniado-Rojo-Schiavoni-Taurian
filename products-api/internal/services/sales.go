@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"products-api/internal/domain"
+	"strconv"
 	"strings"
 )
 
@@ -20,47 +22,35 @@ type SalesRepository interface {
 
 // SalesServiceImpl implementa SalesService
 type SalesServiceImpl struct {
-<<<<<<< HEAD
-<<<<<<< HEAD
 	repository   SalesRepository
 	localCache   SalesRepository
 	itemsService ItemsService
-=======
-	repository  SalesRepository // Inyección de dependencia
-	cache       SalesRepository // Inyección de dependencia
-	usersAPIURL string
->>>>>>> main
-=======
-	repository   SalesRepository
-	localCache   SalesRepository
-	itemsService ItemsService
->>>>>>> main
 }
 
 // NewSalesService crea una nueva instancia del service
 func NewSalesService(repository SalesRepository, cache SalesRepository, itemsService ItemsService) SalesServiceImpl {
 	return SalesServiceImpl{
-<<<<<<< HEAD
-<<<<<<< HEAD
 		repository:   repository,
 		localCache:   cache,
 		itemsService: itemsService,
-=======
-		repository:  repository,
-		cache:       cache,
-		usersAPIURL: "http://localhost:8082",
->>>>>>> main
-=======
-		repository:   repository,
-		localCache:   cache,
-		itemsService: itemsService,
->>>>>>> main
 	}
 }
 
 // Create valida y crea una nueva venta, decrementando el stock del item
 func (s *SalesServiceImpl) Create(ctx context.Context, sale domain.BodySales) (domain.Sales, error) {
 	// Validar la venta antes de crearla
+
+	// convertir string a int
+	userId, err := strconv.Atoi(sale.CustomerID)
+	if err != nil {
+		return domain.Sales{}, fmt.Errorf("invalid customer_id: %w", err)
+	}
+
+	userExistsErr := VerifyUser(ctx, userId)
+	if userExistsErr != nil {
+		return domain.Sales{}, fmt.Errorf("customer does not exist: %w", userExistsErr)
+	}
+
 	if err := s.validateSale(sale); err != nil {
 		return domain.Sales{}, fmt.Errorf("validation error: %w", err)
 	}
@@ -164,11 +154,10 @@ func (s *SalesServiceImpl) GetByCustomerID(ctx context.Context, customerID strin
 }
 
 // Update actualiza una venta existente
-func (s *SalesServiceImpl) Update(ctx context.Context, id string, sale domain.BodySales) (domain.Sales, error) {
-	if err := s.validateSale(sale); err != nil {
-		return domain.Sales{}, fmt.Errorf("validation error: %w", err)
+func (s *SalesServiceImpl) Update(ctx context.Context, id string, sale domain.UpdateBodySales) (domain.Sales, error) {
+	if strings.TrimSpace(sale.ItemID) == "" {
+		return domain.Sales{}, errors.New("item_id is required and cannot be empty")
 	}
-
 	// Obtener la venta original para calcular la diferencia de stock
 	originalSale, err := s.repository.GetByID(ctx, id)
 	if err != nil {
@@ -204,7 +193,7 @@ func (s *SalesServiceImpl) Update(ctx context.Context, id string, sale domain.Bo
 		ItemID:     sale.ItemID,
 		Quantity:   sale.Quantity,
 		TotalPrice: 0, // Se recalculará abajo
-		CustomerID: sale.CustomerID,
+		CustomerID: originalSale.CustomerID,
 	}
 
 	// Recalcular el precio total
@@ -288,5 +277,17 @@ func (s *SalesServiceImpl) validateSale(sale domain.BodySales) error {
 
 	// TotalPrice no puede ser negativo (si viene en el request)
 
+	return nil
+}
+
+func VerifyUser(ctx context.Context, id int) error {
+
+	response, err := http.Get(fmt.Sprintf("http://localhost:8080/users/%d", id))
+	if err != nil {
+		return fmt.Errorf("error getting user: %w", err)
+	}
+	if response.StatusCode != http.StatusOK {
+		return fmt.Errorf("unexpected status code: %d", response.StatusCode)
+	}
 	return nil
 }

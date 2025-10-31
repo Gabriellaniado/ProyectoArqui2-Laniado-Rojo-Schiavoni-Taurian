@@ -19,6 +19,11 @@ type BodySales struct {
 	CustomerID string `json:"customer_id"`
 }
 
+type UpdateBodySales struct {
+	Quantity int    `json:"quantity"`
+	ItemID   string `json:"item_id"`
+}
+
 type SalesPaginatedResponse struct {
 	Page    int     `json:"page"`
 	Count   int     `json:"count"`
