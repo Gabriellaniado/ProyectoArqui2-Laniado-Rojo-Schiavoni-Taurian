@@ -1,0 +1,172 @@
+.register-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #2d5016 0%, #4a7c2a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.register-container {
+  width: 100%;
+  max-width: 500px;
+}
+
+.register-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.logo-auth {
+  height: 100px;
+  width: auto;
+  cursor: pointer;
+  transition: transform 0.3s;
+  filter: brightness(0) invert(1);
+  /* Hace el logo blanco para el fondo verde */
+}
+
+.logo-auth:hover {
+  transform: scale(1.05);
+}
+
+.logo-text:hover {
+  transform: scale(1.05);
+}
+
+.register-card {
+  background-color: #ffffff;
+  border-radius: 20px;
+  padding: 3rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.register-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2d5016;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.register-subtitle {
+  font-size: 1rem;
+  color: #6b8e4e;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.error-alert {
+  background-color: #ffe5e0;
+  color: #c73e1d;
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-weight: 500;
+}
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #2d5016;
+  font-size: 0.95rem;
+}
+
+.form-input {
+  padding: 1rem;
+  border: 2px solid #d4d0c4;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-family: 'Poppins', sans-serif;
+  transition: all 0.3s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #4a7c2a;
+  box-shadow: 0 0 0 3px rgba(74, 124, 42, 0.1);
+}
+
+.form-input::placeholder {
+  color: #b0aba0;
+}
+
+.btn-submit {
+  padding: 1.125rem 2rem;
+  background-color: #2d5016;
+  color: #f5f3ed;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: 'Poppins', sans-serif;
+  margin-top: 1rem;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background-color: #4a7c2a;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(45, 80, 22, 0.3);
+}
+
+.btn-submit:disabled {
+  background-color: #d4d0c4;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.register-footer {
+  margin-top: 2rem;
+  text-align: center;
+  padding-top: 2rem;
+  border-top: 2px solid #f0ede5;
+}
+
+.register-footer p {
+  color: #6b8e4e;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.btn-signin {
+  padding: 0.875rem 2rem;
+  background-color: transparent;
+  color: #2d5016;
+  border: 2px solid #2d5016;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: 'Poppins', sans-serif;
+}
+
+.btn-signin:hover {
+  background-color: #2d5016;
+  color: #f5f3ed;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 600px) {
+  .register-card {
+    padding: 2rem;
+  }
+
+  .register-title {
+    font-size: 1.75rem;
+  }
+}
