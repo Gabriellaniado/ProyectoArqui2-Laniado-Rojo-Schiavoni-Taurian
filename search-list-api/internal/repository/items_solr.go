@@ -99,5 +99,9 @@ func buildQuery(filters domain.SearchFilters) string {
 		parts = append(parts, fmt.Sprintf("price:[%s TO %s]", minStr, maxStr))
 	}
 
+	if len(parts) == 0 {
+		return "*:*" // Query que retorna todo si no hay filtros
+	}
+
 	return strings.Join(parts, " AND ")
 }

@@ -29,6 +29,8 @@ func main() {
 		cfg.Solr.Core,
 	)
 
+	localCache := repository.NewSearchLocalCacheRepository(10 * time.Minute)
+
 	// Inicializamos RabbitMQ para comunicar las novedades de escritura de items
 	itemsQueue := clients.NewRabbitMQClient(
 		cfg.RabbitMQ.Username,
@@ -39,7 +41,7 @@ func main() {
 	)
 
 	// Capa de lógica de negocio: validaciones, transformaciones
-	SearchService := services.NewSearchService(itemsSolrRepo, itemsQueue)
+	SearchService := services.NewSearchService(itemsSolrRepo, itemsQueue, localCache)
 	go SearchService.InitConsumer(ctx)
 
 	// Capa de controladores: maneja HTTP requests/responses

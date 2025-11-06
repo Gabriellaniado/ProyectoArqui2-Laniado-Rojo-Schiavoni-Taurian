@@ -15,7 +15,6 @@ type Item struct {
 }
 
 type SearchFilters struct {
-	ID       string   `json:"id"`
 	Name     string   `json:"name"`
 	MinPrice *float64 `json:"min_price"`
 	MaxPrice *float64 `json:"max_price"`

@@ -2,6 +2,8 @@ package services
 
 import (
 	"context"
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -17,23 +19,64 @@ type SearchRepository interface {
 	Delete(ctx context.Context, id string) error
 }
 
+type SearchLocalCacheRepository interface {
+	ListHash(ctx context.Context, hash string) (domain.PaginatedResponse, error)
+	SaveWithHash(ctx context.Context, hash string, response domain.PaginatedResponse) error
+}
+
 type ItemsConsumer interface { //consume mensajes de rabbit
 	Consume(ctx context.Context, handler func(ctx context.Context, message ItemEvent) error) error
 }
 
 type SearchServiceImpl struct {
-	repo     SearchRepository
-	consumer ItemsConsumer
+	repo       SearchRepository
+	consumer   ItemsConsumer
+	localCache SearchLocalCacheRepository
 }
 
-func NewSearchService(repo SearchRepository, consumer ItemsConsumer) *SearchServiceImpl {
+func NewSearchService(repo SearchRepository, consumer ItemsConsumer, localCache SearchLocalCacheRepository) *SearchServiceImpl {
 	return &SearchServiceImpl{
-		repo:     repo,
-		consumer: consumer,
+		repo:       repo,
+		consumer:   consumer,
+		localCache: localCache,
 	}
 }
 
 func (s *SearchServiceImpl) List(ctx context.Context, filters domain.SearchFilters) (domain.PaginatedResponse, error) {
+	if filters.Name != "" {
+		hashBytes := md5.Sum([]byte(filters.Name))
+		filterHash := hex.EncodeToString(hashBytes[:])
+
+		// 1. Intentar obtener de caché
+		cachedResult, err := s.localCache.ListHash(ctx, filterHash)
+		if err == nil {
+			return cachedResult, nil
+		}
+
+		// 2. Si no está en caché, obtener del repositorio (Solr)
+		result, err := s.repo.List(ctx, filters)
+		if err != nil {
+			return domain.PaginatedResponse{}, fmt.Errorf("error listing from repository: %w", err)
+		}
+
+		// 3. Guardar en caché para futuras busquedas
+		if len(result.Results) > 0 {
+			if err := s.localCache.SaveWithHash(ctx, filterHash, result); err != nil {
+				slog.Error("⚠️ Failed to save to cache",
+					slog.String("hash", filterHash),
+					slog.String("error", err.Error()))
+			} else {
+				slog.Info("💾 Saved to cache",
+					slog.String("hash", filterHash),
+					slog.Int("items_count", len(result.Results)))
+			}
+		} else {
+			slog.Info("⚠️ Empty result, not caching", slog.String("hash", filterHash))
+		}
+
+		return result, nil
+	}
+
 	return s.repo.List(ctx, filters)
 }
 
