@@ -1,0 +1,190 @@
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { productService } from '../services/productService';
+import { salesService } from '../services/salesService';
+import { isAuthenticated, getUserIdFromToken } from '../utils/auth';
+import Header from '../components/Header';
+import './ProductDetailPage.css';
+
+const ProductDetailPage = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [quantity, setQuantity] = useState(1);
+  const [purchasing, setPurchasing] = useState(false);
+
+  useEffect(() => {
+    fetchProduct();
+  }, [id]);
+
+  const fetchProduct = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await productService.getProductById(id);
+
+      // La respuesta viene como { item: {...} }
+      if (response.item) {
+        setProduct(response.item);
+      } else {
+        setProduct(response);
+      }
+    } catch (err) {
+      setError('Error al cargar el producto');
+      console.error('Error fetching product:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleQuantityChange = (e) => {
+    const value = parseInt(e.target.value);
+    if (!isNaN(value) && value > 0) {
+      setQuantity(value);
+    }
+  };
+
+  const handlePurchase = async () => {
+    // Verificar autenticación
+    if (!isAuthenticated()) {
+      alert('Debes iniciar sesión para realizar una compra');
+      navigate('/login');
+      return;
+    }
+
+    // Confirmar compra
+    const confirmPurchase = window.confirm(
+      `¿Estás seguro de comprar la cantidad ${quantity} solicitada de ${product.name}?`
+    );
+
+    if (!confirmPurchase) return;
+
+    try {
+      setPurchasing(true);
+      const customerId = getUserIdFromToken();
+
+      const saleData = {
+        item_id: product.id,
+        quantity: quantity,
+        total_price: product.price * quantity,
+        customer_id: customerId
+      };
+
+      const response = await salesService.createSale(saleData);
+
+      // Si el status es 201, mostrar confirmación
+      if (response) {
+        alert('Compra confirmada');
+        navigate('/mis-compras');
+      }
+    } catch (err) {
+      console.error('Error creating sale:', err);
+      alert('Error al procesar la compra. Por favor intenta nuevamente.');
+    } finally {
+      setPurchasing(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="product-detail-page">
+        <Header />
+        <div className="container">
+          <div className="loading">Cargando producto...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <div className="product-detail-page">
+        <Header />
+        <div className="container">
+          <div className="error-message">{error || 'Producto no encontrado'}</div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="product-detail-page">
+      <Header />
+
+      <div className="container">
+        <button className="back-button" onClick={() => navigate('/')}>
+          ← Volver a productos
+        </button>
+
+        <div className="product-detail">
+          <div className="product-image-large">
+            <img
+              src={product.image_url || 'https://via.placeholder.com/600x800?text=Mate'}
+              alt={product.name}
+              onError={(e) => {
+                e.target.src = 'https://via.placeholder.com/600x800?text=Mate';
+              }}
+            />
+          </div>
+
+          <div className="product-info-detailed">
+            <h1 className="product-title">{product.name}</h1>
+
+            <div className="product-category">
+              <span className="category-label">Categoría:</span>
+              <span className="category-value">{product.category}</span>
+            </div>
+
+            <div className="product-description">
+              <h3>Descripción</h3>
+              <p>{product.description}</p>
+            </div>
+
+            <div className="product-stock">
+              <span className="stock-label">Stock disponible:</span>
+              <span className="stock-value">{product.stock} unidades</span>
+            </div>
+
+            <div className="product-price-large">
+              ${product.price.toFixed(2)}
+            </div>
+
+            <div className="purchase-section">
+              <div className="quantity-selector">
+                <label htmlFor="quantity">Cantidad:</label>
+                <input
+                  type="number"
+                  id="quantity"
+                  min="1"
+                  max={product.stock}
+                  value={quantity}
+                  onChange={handleQuantityChange}
+                  className="quantity-input"
+                />
+              </div>
+
+              <div className="total-price">
+                <span>Total:</span>
+                <span className="total-amount">
+                  ${(product.price * quantity).toFixed(2)}
+                </span>
+              </div>
+
+              <button
+                className="btn-purchase"
+                onClick={handlePurchase}
+                disabled={purchasing || quantity > product.stock}
+              >
+                {purchasing ? 'Procesando...' : 'Comprar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ProductDetailPage;
