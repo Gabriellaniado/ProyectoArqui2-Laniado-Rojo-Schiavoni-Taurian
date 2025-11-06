@@ -21,6 +21,7 @@ const Header = () => {
             alt="GustoaMate"
             className="logo-image"
           />
+          <span className="logo-text">Gusto a Mate</span>
         </div>
         <nav className="nav-buttons">
           {authenticated ? (

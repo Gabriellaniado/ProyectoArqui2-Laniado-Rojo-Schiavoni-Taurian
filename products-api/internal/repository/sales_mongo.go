@@ -66,7 +66,7 @@ func (r *MongoSalesRepository) GetByID(ctx context.Context, id string) (domain.S
 }
 
 // GetByCustomerID obtiene todas las ventas de un cliente específico
-func (r *MongoSalesRepository) GetByCustomerID(ctx context.Context, customerID string) ([]domain.Sales, error) {
+func (r *MongoSalesRepository) GetByCustomerID(ctx context.Context, customerID int) ([]domain.Sales, error) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 

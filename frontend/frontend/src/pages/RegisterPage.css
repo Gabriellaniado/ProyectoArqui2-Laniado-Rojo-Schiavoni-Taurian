@@ -1,6 +1,6 @@
 .register-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #2d5016 0%, #4a7c2a 100%);
+  background: linear-gradient(135deg, #10382b 0%, #284b3b 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -18,12 +18,11 @@
 }
 
 .logo-auth {
-  height: 100px;
-  width: auto;
-  cursor: pointer;
-  transition: transform 0.3s;
-  filter: brightness(0) invert(1);
-  /* Hace el logo blanco para el fondo verde */
+  height: 120px;
+  width: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  transition: transform 0.2s;
 }
 
 .logo-auth:hover {
@@ -44,14 +43,14 @@
 .register-title {
   font-size: 2rem;
   font-weight: 700;
-  color: #2d5016;
+  color: #10382b;
   margin-bottom: 0.5rem;
   text-align: center;
 }
 
 .register-subtitle {
   font-size: 1rem;
-  color: #6b8e4e;
+  color: #1a5038;
   text-align: center;
   margin-bottom: 2rem;
 }
@@ -95,7 +94,7 @@
 
 .form-input:focus {
   outline: none;
-  border-color: #4a7c2a;
+  border-color: #1a5038;
   box-shadow: 0 0 0 3px rgba(74, 124, 42, 0.1);
 }
 
@@ -105,7 +104,7 @@
 
 .btn-submit {
   padding: 1.125rem 2rem;
-  background-color: #2d5016;
+  background-color: #10382b;
   color: #f5f3ed;
   border: none;
   border-radius: 12px;
@@ -118,7 +117,7 @@
 }
 
 .btn-submit:hover:not(:disabled) {
-  background-color: #4a7c2a;
+  background-color: #1a5038;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(45, 80, 22, 0.3);
 }
@@ -137,7 +136,7 @@
 }
 
 .register-footer p {
-  color: #6b8e4e;
+  color: #2d5016;
   margin-bottom: 1rem;
   font-weight: 500;
 }
@@ -145,8 +144,8 @@
 .btn-signin {
   padding: 0.875rem 2rem;
   background-color: transparent;
-  color: #2d5016;
-  border: 2px solid #2d5016;
+  color: #10382b;
+  border: 2px solid #10382b;
   border-radius: 10px;
   font-size: 1rem;
   font-weight: 600;
@@ -156,7 +155,7 @@
 }
 
 .btn-signin:hover {
-  background-color: #2d5016;
+  background-color: #10382b;
   color: #f5f3ed;
   transform: translateY(-2px);
 }

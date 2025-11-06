@@ -55,7 +55,7 @@ const PurchaseDetailPage = () => {
                   src={purchase.productImage} 
                   alt={purchase.productName}
                   onError={(e) => {
-                    e.target.src = 'https://via.placeholder.com/400?text=Mate';
+                     e.currentTarget.style.display = 'none';
                   }}
                 />
               </div>
@@ -70,10 +70,7 @@ const PurchaseDetailPage = () => {
                   <span className="info-value">{purchase.productName}</span>
                 </div>
 
-                <div className="info-row">
-                  <span className="info-label">ID del Producto:</span>
-                  <span className="info-value">{purchase.item_id}</span>
-                </div>
+
               </div>
 
               <div className="info-section">
@@ -92,16 +89,6 @@ const PurchaseDetailPage = () => {
                 <div className="info-row">
                   <span className="info-label">Fecha de Compra:</span>
                   <span className="info-value">{formatDate(purchase.created_at || purchase.date)}</span>
-                </div>
-
-                <div className="info-row">
-                  <span className="info-label">ID de Compra:</span>
-                  <span className="info-value">{purchase.id}</span>
-                </div>
-
-                <div className="info-row">
-                  <span className="info-label">ID de Cliente:</span>
-                  <span className="info-value">{purchase.customer_id}</span>
                 </div>
               </div>
 

@@ -15,7 +15,7 @@ import (
 type SalesRepository interface {
 	Create(ctx context.Context, sale domain.Sales) (domain.Sales, error)
 	GetByID(ctx context.Context, id string) (domain.Sales, error)
-	GetByCustomerID(ctx context.Context, customerID string) ([]domain.Sales, error)
+	GetByCustomerID(ctx context.Context, customerID int) ([]domain.Sales, error)
 	Update(ctx context.Context, id string, sale domain.Sales) (domain.Sales, error)
 	Delete(ctx context.Context, id string) error
 }
@@ -40,13 +40,12 @@ func NewSalesService(repository SalesRepository, cache SalesRepository, itemsSer
 func (s *SalesServiceImpl) Create(ctx context.Context, sale domain.BodySales) (domain.Sales, error) {
 	// Validar la venta antes de crearla
 
-	// convertir string a int
-	userId, err := strconv.Atoi(sale.CustomerID)
+	customerIDint, err := strconv.Atoi(sale.CustomerID)
 	if err != nil {
-		return domain.Sales{}, fmt.Errorf("invalid customer_id: %w", err)
+		return domain.Sales{}, errors.New("invalid customer_id format")
 	}
 
-	userExistsErr := VerifyUser(ctx, userId)
+	userExistsErr := VerifyUser(ctx, customerIDint)
 	if userExistsErr != nil {
 		return domain.Sales{}, fmt.Errorf("customer does not exist: %w", userExistsErr)
 	}
@@ -75,7 +74,7 @@ func (s *SalesServiceImpl) Create(ctx context.Context, sale domain.BodySales) (d
 		ItemID:     sale.ItemID,
 		Quantity:   sale.Quantity,
 		TotalPrice: 0, // Se calculará abajo
-		CustomerID: sale.CustomerID,
+		CustomerID: customerIDint,
 	}
 
 	// Calcular el precio total de la venta
@@ -146,7 +145,13 @@ func (s *SalesServiceImpl) GetByID(ctx context.Context, id string) (domain.Sales
 
 // GetByCustomerID obtiene todas las ventas de un cliente específico
 func (s *SalesServiceImpl) GetByCustomerID(ctx context.Context, customerID string) ([]domain.Sales, error) {
-	sales, err := s.repository.GetByCustomerID(ctx, customerID)
+
+	customerIDint, err := strconv.Atoi(customerID)
+	if err != nil {
+		return []domain.Sales{}, errors.New("invalid customer_id format")
+	}
+
+	sales, err := s.repository.GetByCustomerID(ctx, customerIDint)
 	if err != nil {
 		return []domain.Sales{}, fmt.Errorf("error getting sales by customer_id from repository: %w", err)
 	}
@@ -266,7 +271,7 @@ func (s *SalesServiceImpl) validateSale(sale domain.BodySales) error {
 	}
 
 	// CustomerID es obligatorio
-	if strings.TrimSpace(sale.CustomerID) == "" {
+	if sale.CustomerID == "" {
 		return errors.New("customer_id is required and cannot be empty")
 	}
 
@@ -282,7 +287,7 @@ func (s *SalesServiceImpl) validateSale(sale domain.BodySales) error {
 
 func VerifyUser(ctx context.Context, id int) error {
 
-	response, err := http.Get(fmt.Sprintf("http://localhost:8080/users/%d", id))
+	response, err := http.Get(fmt.Sprintf("http://localhost:8082/users/%d", id))
 	if err != nil {
 		return fmt.Errorf("error getting user: %w", err)
 	}

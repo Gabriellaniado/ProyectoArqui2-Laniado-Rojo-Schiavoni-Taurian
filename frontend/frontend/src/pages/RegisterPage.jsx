@@ -54,11 +54,13 @@ const RegisterPage = () => {
     <div className="register-page">
       <div className="register-container">
         <div className="register-header">
-          <h1 className="logo-text" onClick={() => navigate('/')}>
-            🧉 Mates Argentinos
-          </h1>
+          <img
+            src="/logo-gustoamate.jpg"
+            alt="GustoaMate"
+            className="logo-auth"
+            onClick={() => navigate('/')}
+          />
         </div>
-
         <div className="register-card">
           <h2 className="register-title">Sign Up</h2>
           <p className="register-subtitle">Crea tu cuenta para comenzar a comprar</p>

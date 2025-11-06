@@ -1,6 +1,6 @@
 .purchases-page {
   min-height: 100vh;
-  background-color: #f5f3ed;
+  background-color: #fef7e5;
 }
 
 .page-title {
@@ -14,7 +14,7 @@
 .no-purchases {
   text-align: center;
   padding: 4rem 2rem;
-  background-color: #ffffff;
+  background-color: #fef7e5;
   border-radius: 20px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
@@ -27,7 +27,7 @@
 
 .btn-go-shopping {
   padding: 1rem 2rem;
-  background-color: #2d5016;
+  background-color: #10382b;
   color: #f5f3ed;
   border: none;
   border-radius: 12px;
@@ -39,7 +39,7 @@
 }
 
 .btn-go-shopping:hover {
-  background-color: #4a7c2a;
+  background-color: #1a5038;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(45, 80, 22, 0.3);
 }
@@ -51,7 +51,7 @@
 }
 
 .purchase-card {
-  background-color: #ffffff;
+  background-color: #fef7e5;
   border-radius: 16px;
   padding: 2rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -67,8 +67,8 @@
 }
 
 .purchase-number {
-  background-color: #2d5016;
-  color: #f5f3ed;
+  background-color: #10382b;
+  color: #fef7e5;
   padding: 0.75rem 1.5rem;
   border-radius: 10px;
   font-weight: 700;
@@ -88,7 +88,7 @@
   height: 100px;
   border-radius: 10px;
   overflow: hidden;
-  background-color: #f8f6f0;
+  background-color: #fef7e5;
 }
 
 .purchase-image img {
@@ -104,13 +104,13 @@
 .purchase-product-name {
   font-size: 1.3rem;
   font-weight: 600;
-  color: #2d5016;
+  color: #10382b;
   margin-bottom: 0.5rem;
 }
 
 .purchase-date {
   font-size: 1rem;
-  color: #6b8e4e;
+  color: #1a5038;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -122,8 +122,8 @@
 
 .btn-detail {
   padding: 0.875rem 1.5rem;
-  background-color: #4a7c2a;
-  color: #f5f3ed;
+  background-color: #1a5038;
+  color: #fef7e5;
   border: none;
   border-radius: 10px;
   font-size: 1rem;
@@ -135,7 +135,7 @@
 }
 
 .btn-detail:hover {
-  background-color: #2d5016;
+  background-color: #10382b;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(45, 80, 22, 0.3);
 }

@@ -1,5 +1,5 @@
 .header {
-  background-color: #2d5016;
+  background-color: #10382b;
   padding: 1.5rem 2rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   position: sticky;
@@ -18,6 +18,9 @@
 .logo {
   cursor: pointer;
   transition: transform 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 .logo:hover {
@@ -26,7 +29,9 @@
 
 .logo-image {
   height: 60px;
-  width: auto;
+  width: 60px;
+  border-radius: 50%;
+  object-fit: cover;
   transition: transform 0.2s;
 }
 
@@ -34,16 +39,28 @@
   transform: scale(1.05);
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .logo-image {
-    height: 45px;
-  }
+.logo-text {
+  color: #fef7e5;
+  font-size: 1.8rem;
+  font-weight: 700;
+  font-family: 'Poppins', sans-serif;
+  letter-spacing: 0.5px;
 }
 
-.nav-buttons {
-  display: flex;
-  gap: 1rem;
+/* Responsive */
+@media (max-width: 768px) {
+  .logo {
+    gap: 0.5rem;
+  }
+  
+  .logo-image {
+    height: 45px;
+    width: 45px;
+  }
+  
+  .logo-text {
+    font-size: 1.4rem;
+  }
 }
 
 .btn-primary,
@@ -59,25 +76,32 @@
 }
 
 .btn-primary {
-  background-color: #4a7c2a;
-  color: #f5f3ed;
+  background-color: transparent;
+  color: #fef7e5;
+  border: 2px solid #fef7e5;
 }
 
 .btn-primary:hover {
-  background-color: #5a8f35;
+  background-color: rgba(245, 243, 237, 0.1);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(74, 124, 42, 0.3);
 }
 
 .btn-secondary {
-  background-color: transparent;
-  color: #f5f3ed;
-  border: 2px solid #f5f3ed;
+  background-color: #fef7e5; /*#2e7c80*/
+  color: #1a4d50;
 }
 
 .btn-secondary:hover {
-  background-color: rgba(245, 243, 237, 0.1);
+  background-color: #1a4d50;
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 56, 43, 0.3);
+  color: #fef7e5;
+}
+
+.nav-buttons {
+  display: flex;
+  align-items: center;
+  gap: 1rem; /* Esto creará un espacio de 1rem entre los botones */
 }
 
 @media (max-width: 768px) {
@@ -90,7 +114,9 @@
   }
 
   .nav-buttons {
-    gap: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
   }
 
   .btn-primary,

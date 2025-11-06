@@ -13,7 +13,7 @@ type Sales struct {
 	Quantity   int                `bson:"quantity"`
 	TotalPrice float64            `bson:"total_price"`
 	SaleDate   time.Time          `bson:"sale_date"`
-	CustomerID string             `bson:"customer_id"`
+	CustomerID int                `bson:"customer_id"`
 }
 
 type SalesList []Sales

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { userService } from '../services/userService';
 import { setToken } from '../utils/auth';
+import { saveCustomerID } from '../utils/auth';
 import './LoginPage.css';
 
 const LoginPage = () => {
@@ -37,6 +38,7 @@ const LoginPage = () => {
       // Guardar el token en la cookie
       if (response.token) {
         setToken(response.token);
+        saveCustomerID(response.customer_id);
         alert('Inicio de sesión exitoso');
         navigate('/');
       } else {

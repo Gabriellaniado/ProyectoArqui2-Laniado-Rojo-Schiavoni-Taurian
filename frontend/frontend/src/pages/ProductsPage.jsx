@@ -25,7 +25,6 @@ const ProductsPage = () => {
         count: itemsPerPage
       });
 
-      // La respuesta viene como { item: {...} }
       if (response.results && Array.isArray(response.results)) {
         setProducts(response.results);
       } else if (Array.isArray(response)) {
@@ -52,7 +51,7 @@ const ProductsPage = () => {
       setLoading(true);
       setError(null);
       const response = await searchService.searchProducts({
-        query: searchQuery,
+        name: searchQuery,
         page: 1,
         count: itemsPerPage
       });

@@ -67,14 +67,14 @@ func NewItemsService(repository ItemsRepository, localCache ItemsRepository, dis
 // Consigna 1: Validar name no vacío y price >= 0
 func (s *ItemsServiceImpl) Create(ctx context.Context, item domain.Item) (domain.Item, error) {
 
-	if item.Name == "" || item.Category == "" || item.Description == "" || item.Price == 0 || item.Stock == 0 {
+	if item.Name == "" || item.Category == "" || item.Description == "" || item.Price == 0 || item.Stock < 0 {
 		return domain.Item{}, fmt.Errorf("error, all fields need to be filled")
 	}
 	if item.Price <= 0 {
 		return domain.Item{}, fmt.Errorf("error, the price cannot be negative")
 	}
 
-	if item.Stock <= 0 {
+	if item.Stock < 0 {
 		return domain.Item{}, fmt.Errorf("error, the stock cannot be negative")
 	}
 
@@ -134,7 +134,7 @@ func (s *ItemsServiceImpl) GetByID(ctx context.Context, id string) (domain.Item,
 // Consigna 3: Validar campos antes de actualizar
 func (s *ItemsServiceImpl) Update(ctx context.Context, id string, item domain.Item) (domain.Item, error) {
 
-	if item.Name == "" || item.Category == "" || item.Description == "" || item.Price == 0 || item.Stock == 0 {
+	if item.Name == "" || item.Category == "" || item.Description == "" || item.Price == 0 || item.Stock < 0 {
 		return domain.Item{}, fmt.Errorf("error, all fields need to be filled")
 	}
 	if item.Price < 0 {

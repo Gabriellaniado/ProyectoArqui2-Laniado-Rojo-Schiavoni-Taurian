@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { productService } from '../services/productService';
 import { salesService } from '../services/salesService';
-import { isAuthenticated, getUserIdFromToken } from '../utils/auth';
+import { isAuthenticated, getCustomerId } from '../utils/auth';
 import Header from '../components/Header';
 import './ProductDetailPage.css';
 
@@ -63,12 +63,11 @@ const ProductDetailPage = () => {
 
     try {
       setPurchasing(true);
-      const customerId = getUserIdFromToken();
+      const customerId = (getCustomerId());
 
       const saleData = {
         item_id: product.id,
         quantity: quantity,
-        total_price: product.price * quantity,
         customer_id: customerId
       };
 
@@ -121,10 +120,10 @@ const ProductDetailPage = () => {
         <div className="product-detail">
           <div className="product-image-large">
             <img
-              src={product.image_url || 'https://via.placeholder.com/600x800?text=Mate'}
+              src={product.image_url}
               alt={product.name}
               onError={(e) => {
-                e.target.src = 'https://via.placeholder.com/600x800?text=Mate';
+                
               }}
             />
           </div>

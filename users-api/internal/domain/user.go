@@ -47,7 +47,8 @@ type LoginRequest struct {
 }
 
 type LoginResponse struct {
-	Token   string `json:"token"`
-	Name    string `json:"name"`
-	Surname string `json:"surname"`
+	Token      string `json:"token"`
+	Name       string `json:"name"`
+	Surname    string `json:"surname"`
+	CustomerID int    `json:"customer_id"`
 }

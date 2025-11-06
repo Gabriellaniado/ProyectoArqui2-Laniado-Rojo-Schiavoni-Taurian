@@ -1,6 +1,6 @@
 .login-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #2d5016 0%, #4a7c2a 100%);
+  background: #10382b;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -18,12 +18,11 @@
 }
 
 .logo-auth {
-  height: 100px;
-  width: auto;
-  cursor: pointer;
-  transition: transform 0.3s;
-  filter: brightness(0) invert(1);
-  /* Hace el logo blanco para el fondo verde */
+  height: 120px;
+  width: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  transition: transform 0.2s;
 }
 
 .logo-auth:hover {
@@ -34,8 +33,16 @@
   transform: scale(1.05);
 }
 
+.logo-image {
+  height: 60px;
+  width: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  transition: transform 0.2s;
+}
+
 .login-card {
-  background-color: #ffffff;
+  background-color: #fef7e5;
   border-radius: 20px;
   padding: 3rem;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
@@ -44,20 +51,20 @@
 .login-title {
   font-size: 2rem;
   font-weight: 700;
-  color: #2d5016;
+  color: #10382b;
   margin-bottom: 0.5rem;
   text-align: center;
 }
 
 .login-subtitle {
   font-size: 1rem;
-  color: #6b8e4e;
+  color: #10382b;
   text-align: center;
   margin-bottom: 2rem;
 }
 
 .error-alert {
-  background-color: #ffe5e0;
+  background-color: #fef7e5;
   color: #c73e1d;
   padding: 1rem;
   border-radius: 10px;
@@ -80,13 +87,13 @@
 
 .form-group label {
   font-weight: 600;
-  color: #2d5016;
+  color: #10382b;
   font-size: 0.95rem;
 }
 
 .form-input {
   padding: 1rem;
-  border: 2px solid #d4d0c4;
+  border: 2px solid #fef7e5;
   border-radius: 10px;
   font-size: 1rem;
   font-family: 'Poppins', sans-serif;
@@ -95,7 +102,7 @@
 
 .form-input:focus {
   outline: none;
-  border-color: #4a7c2a;
+  border-color: #10382b;
   box-shadow: 0 0 0 3px rgba(74, 124, 42, 0.1);
 }
 
@@ -105,8 +112,8 @@
 
 .btn-submit {
   padding: 1.125rem 2rem;
-  background-color: #2d5016;
-  color: #f5f3ed;
+  background-color: #10382b;
+  color: #fef7e5;
   border: none;
   border-radius: 12px;
   font-size: 1.1rem;
@@ -118,7 +125,7 @@
 }
 
 .btn-submit:hover:not(:disabled) {
-  background-color: #4a7c2a;
+  background-color: #2d5016;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(45, 80, 22, 0.3);
 }
@@ -133,11 +140,11 @@
   margin-top: 2rem;
   text-align: center;
   padding-top: 2rem;
-  border-top: 2px solid #f0ede5;
+  border-top: 2px solid #fef7e5;
 }
 
 .login-footer p {
-  color: #6b8e4e;
+  color: #10382b;
   margin-bottom: 1rem;
   font-weight: 500;
 }
@@ -157,7 +164,7 @@
 
 .btn-signup:hover {
   background-color: #2d5016;
-  color: #f5f3ed;
+  color: #fef7e5;
   transform: translateY(-2px);
 }
 

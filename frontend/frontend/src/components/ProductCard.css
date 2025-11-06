@@ -11,7 +11,7 @@
 
 .product-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 8px 24px rgba(45, 80, 22, 0.15);
+  box-shadow: 0 8px 24px rgba(16, 56, 43, 0.15);
 }
 
 .product-image {
@@ -42,7 +42,7 @@
 .product-name {
   font-size: 1.2rem;
   font-weight: 600;
-  color: #2d5016;
+  color: #10382b;
   margin-bottom: 0.5rem;
   line-height: 1.4;
   min-height: 2.8rem;
@@ -51,12 +51,12 @@
 .product-price {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #4a7c2a;
+  color: #1a5038;
   margin-bottom: 1rem;
 }
 
 .btn-buy {
-  background-color: #2d5016;
+  background-color: #10382b;
   color: #f5f3ed;
   border: none;
   padding: 0.875rem 1.5rem;
@@ -70,9 +70,9 @@
 }
 
 .btn-buy:hover {
-  background-color: #4a7c2a;
+  background-color: #1a5038;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(45, 80, 22, 0.3);
+  box-shadow: 0 4px 12px rgba(16, 56, 43, 0.3);
 }
 
 .btn-buy:active {

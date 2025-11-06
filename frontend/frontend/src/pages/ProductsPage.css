@@ -1,6 +1,6 @@
 .products-page {
   min-height: 100vh;
-  background-color: #f5f3ed;
+  background-color: #fef7e5;
 }
 
 .container {
@@ -41,7 +41,7 @@
 
 .search-button {
   padding: 1rem 2rem;
-  background-color: #2d5016;
+  background-color: #10382b;
   color: #f5f3ed;
   border: none;
   border-radius: 12px;
@@ -53,9 +53,9 @@
 }
 
 .search-button:hover {
-  background-color: #4a7c2a;
+  border-color: #1a5038;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(45, 80, 22, 0.3);
+  box-shadow: 0 0 0 3px rgba(26, 80, 56, 0.1);
 }
 
 .products-grid {
@@ -91,7 +91,7 @@
 
 .pagination-btn {
   padding: 0.875rem 1.5rem;
-  background-color: #2d5016;
+  background-color: #10382b;
   color: #f5f3ed;
   border: none;
   border-radius: 10px;
@@ -103,9 +103,9 @@
 }
 
 .pagination-btn:hover:not(:disabled) {
-  background-color: #4a7c2a;
+  background-color: #1a5038;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(45, 80, 22, 0.3);
+  box-shadow: 0 4px 12px rgba(16, 56, 43, 0.3);
 }
 
 .pagination-btn:disabled {
@@ -117,7 +117,7 @@
 .page-number {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #2d5016;
+  color: #10382b;
 }
 
 @media (max-width: 1200px) {

@@ -10,7 +10,7 @@ type Sales struct {
 	Quantity   int       `json:"quantity"`
 	TotalPrice float64   `json:"total_price"`
 	SaleDate   time.Time `json:"sale_date"`
-	CustomerID string    `json:"customer_id"`
+	CustomerID int       `json:"customer_id"`
 }
 
 type BodySales struct {
@@ -47,7 +47,7 @@ type SalesSearchFilters struct {
 }
 
 type CustomerSalesResponse struct {
-	CustomerID string  `json:"customer_id"`
+	CustomerID int     `json:"customer_id"`
 	Sales      []Sales `json:"sales"`
 	Count      int     `json:"count"`
 	TotalSpent float64 `json:"total_spent"`

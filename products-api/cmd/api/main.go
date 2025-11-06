@@ -118,16 +118,16 @@ func main() {
 	router.POST("/sales", authController.VerifyToken, salesController.CreateSale)
 
 	// GET /sales/:id - obtener venta por ID (MongoDB ObjectID)
-	router.GET("/sales/:id", authController.VerifyAdminToken, salesController.GetSaleByID)
+	router.GET("/sales/:id", authController.VerifyToken, salesController.GetSaleByID)
 
 	// GET /sales/customer/:customerID - obtener todas las ventas de un cliente
-	router.GET("/sales/customer/:customerID", authController.VerifyAdminToken, salesController.GetSalesByCustomerID)
+	router.GET("/sales/customer/:customerID", authController.VerifyToken, salesController.GetSalesByCustomerID)
 
 	// PUT /sales/:id - actualizar venta existente
-	router.PUT("/sales/:id", authController.VerifyAdminToken, salesController.UpdateSale)
+	router.PUT("/sales/:id", authController.VerifyToken, salesController.UpdateSale)
 
 	// DELETE /sales/:id - eliminar venta
-	router.DELETE("/sales/:id", authController.VerifyAdminToken, salesController.DeleteSale)
+	router.DELETE("/sales/:id", authController.VerifyToken, salesController.DeleteSale)
 
 	// Configuración del server HTTP
 	srv := &http.Server{

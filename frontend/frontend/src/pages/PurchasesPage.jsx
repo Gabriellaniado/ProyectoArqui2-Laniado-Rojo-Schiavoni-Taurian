@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { salesService } from '../services/salesService';
 import { productService } from '../services/productService';
-import { getUserIdFromToken, isAuthenticated } from '../utils/auth';
+import { getCustomerId } from '../utils/auth';
+import { isAuthenticated } from '../utils/auth';
 import Header from '../components/Header';
 import './PurchasesPage.css';
 
@@ -26,7 +27,7 @@ const PurchasesPage = () => {
     try {
       setLoading(true);
       setError(null);
-      const customerId = getUserIdFromToken();
+      const customerId = getCustomerId();
 
       if (!customerId) {
         setError('No se pudo obtener el ID del usuario');
@@ -35,11 +36,10 @@ const PurchasesPage = () => {
 
       const response = await salesService.getSalesByCustomerId(customerId);
 
-      // La respuesta viene como { item: [...] }
-      // POR ESTO:
+      // La respuesta viene como { customer_id, sales, count, total_spent }
       let salesData = [];
-      if (response.results && Array.isArray(response.results)) {
-        salesData = response.results;
+      if (response.sales && Array.isArray(response.sales)) {
+        salesData = response.sales;
       } else if (Array.isArray(response)) {
         salesData = response;
       }
@@ -140,7 +140,7 @@ const PurchasesPage = () => {
                         src={purchase.productImage}
                         alt={purchase.productName}
                         onError={(e) => {
-                          e.target.src = 'https://via.placeholder.com/100?text=Mate';
+                           e.currentTarget.style.display = 'none';
                         }}
                       />
                     </div>
@@ -148,8 +148,14 @@ const PurchasesPage = () => {
 
                   <div className="purchase-info">
                     <h3 className="purchase-product-name">{purchase.productName}</h3>
+                    <p className="purchase-quantity">
+                      <span className="label">Cantidad:</span> {purchase.quantity}
+                    </p>
+                    <p className="purchase-price">
+                      <span className="label">Total:</span> ${purchase.total_price?.toFixed(2)}
+                    </p>
                     <p className="purchase-date">
-                      <span className="label">Fecha:</span> {formatDate(purchase.created_at || purchase.date)}
+                      <span className="label">Fecha:</span> {formatDate(purchase.sale_date)}
                     </p>
                   </div>
                 </div>

@@ -1,22 +1,32 @@
-import Cookies from 'js-cookie';
-import { jwtDecode } from 'jwt-decode';
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
+
+export const saveCustomerID = (customerId) => {
+  localStorage.setItem("customer_id", customerId);
+};
 
 export const getToken = () => {
-  return Cookies.get('token');
+  return Cookies.get("token");
 };
 
 export const setToken = (token) => {
-  Cookies.set('token', token, { expires: 7 }); // 7 días
+  Cookies.set("token", token, { expires: 7 }); // 7 días
 };
 
 export const removeToken = () => {
-  Cookies.remove('token');
+  Cookies.remove("token");
 };
+
+export const getCustomerId = () => {
+  return localStorage.getItem("customer_id");
+};
+
+//export const setUserID = (userID) => {
 
 export const isAuthenticated = () => {
   const token = getToken();
   if (!token) return false;
-  
+
   try {
     const decoded = jwtDecode(token);
     // Verificar si el token no ha expirado
@@ -34,7 +44,7 @@ export const isAuthenticated = () => {
 export const getUserIdFromToken = () => {
   const token = getToken();
   if (!token) return null;
-  
+
   try {
     const decoded = jwtDecode(token);
     return decoded.customer_id || decoded.user_id || decoded.id || decoded.sub;
@@ -46,7 +56,7 @@ export const getUserIdFromToken = () => {
 export const getDecodedToken = () => {
   const token = getToken();
   if (!token) return null;
-  
+
   try {
     return jwtDecode(token);
   } catch (error) {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"products-api/internal/domain"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -92,9 +93,18 @@ func (c *SalesController) GetSaleByID(ctx *gin.Context) {
 // GetSalesByCustomerID maneja GET /sales/customer/:customerID - Obtiene todas las ventas de un cliente
 func (c *SalesController) GetSalesByCustomerID(ctx *gin.Context) {
 	customerID := ctx.Param("customerID")
+
 	if customerID == "" {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": "customerID parameter is required",
+		})
+		return
+	}
+
+	customerIDInt, err := strconv.Atoi(customerID)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "customerID must be a valid integer",
 		})
 		return
 	}
@@ -116,7 +126,7 @@ func (c *SalesController) GetSalesByCustomerID(ctx *gin.Context) {
 
 	// Usar la estructura del domain
 	response := domain.CustomerSalesResponse{
-		CustomerID: customerID,
+		CustomerID: customerIDInt,
 		Sales:      sales,
 		Count:      len(sales),
 		TotalSpent: totalSpent,

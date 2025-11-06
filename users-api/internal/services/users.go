@@ -194,9 +194,10 @@ func (s *UsersServiceImpl) Login(ctx context.Context, loginReq domain.LoginReque
 	}
 
 	return domain.LoginResponse{
-		Token:   token,
-		Name:    userModel.FirstName,
-		Surname: userModel.LastName,
+		Token:      token,
+		Name:       userModel.FirstName,
+		Surname:    userModel.LastName,
+		CustomerID: userModel.ID,
 	}, nil
 }
 

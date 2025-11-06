@@ -24,6 +24,7 @@ type SolrDocument struct {
 	Price       []float64 `json:"price"`
 	Category    []string  `json:"category"`
 	Description []string  `json:"description"`
+	ImageURL    []string  `json:"image_url"`
 	CreatedAt   []string  `json:"created_at"`
 	UpdatedAt   []string  `json:"updated_at"`
 }
@@ -63,6 +64,7 @@ func (s *SolrClient) Index(ctx context.Context, item domain.Item) error {
 		Price:       []float64{item.Price},
 		Category:    []string{item.Category},
 		Description: []string{item.Description},
+		ImageURL:    []string{item.ImageURL},
 		CreatedAt:   []string{item.CreatedAt.Format(time.RFC3339)},
 		UpdatedAt:   []string{item.UpdatedAt.Format(time.RFC3339)},
 	}
@@ -176,12 +178,18 @@ func (s *SolrClient) Search(ctx context.Context, query string, page int, count i
 			description = doc.Description[0]
 		}
 
+		var imageURL string
+		if len(doc.ImageURL) > 0 {
+			imageURL = doc.ImageURL[0]
+		}
+
 		items[i] = domain.Item{
 			ID:          doc.ID,
 			Name:        name,
 			Category:    category,
 			Price:       price,
 			Description: description,
+			ImageURL:    imageURL,
 			CreatedAt:   createdAt,
 			UpdatedAt:   updatedAt,
 		}

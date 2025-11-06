@@ -18,13 +18,13 @@
 }
 
 .btn-back:hover {
-  background-color: #2d5016;
-  color: #f5f3ed;
+  background-color: #10382b;
+  color: #fef7e5;
   transform: translateX(-5px);
 }
 
 .purchase-detail-card {
-  background-color: #ffffff;
+  background-color: #fef7e5;
   border-radius: 20px;
   padding: 3rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
@@ -33,7 +33,7 @@
 .detail-title {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #2d5016;
+  color: #10382b;
   margin-bottom: 2rem;
   text-align: center;
 }
@@ -49,7 +49,7 @@
   height: 400px;
   border-radius: 16px;
   overflow: hidden;
-  background-color: #f8f6f0;
+  background-color: #fef7e5;
 }
 
 .detail-image img {
@@ -66,14 +66,14 @@
 
 .info-section {
   padding: 1.5rem;
-  background-color: #f8f6f0;
+  background-color: #fef7e5;
   border-radius: 12px;
 }
 
 .section-title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #2d5016;
+  color: #10382b;
   margin-bottom: 1.5rem;
   padding-bottom: 0.75rem;
   border-bottom: 2px solid #d4d0c4;
@@ -84,7 +84,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem 0;
-  border-bottom: 1px solid #e8e6de;
+  border-bottom: 1px solid #fef7e5;
 }
 
 .info-row:last-child {
@@ -93,13 +93,13 @@
 
 .info-label {
   font-weight: 600;
-  color: #6b8e4e;
+  color: #10382b;
   font-size: 1rem;
 }
 
 .info-value {
   font-weight: 500;
-  color: #2d5016;
+  color: #10382b;
   font-size: 1rem;
   text-align: right;
 }
@@ -107,12 +107,12 @@
 .info-value.highlight {
   font-size: 1.3rem;
   font-weight: 700;
-  color: #4a7c2a;
+  color: #1a5038;
 }
 
 .price-summary {
-  background-color: #2d5016;
-  color: #f5f3ed;
+  background-color: #10382b;
+  color:#fef7e5;
   padding: 2rem;
   border-radius: 12px;
   margin-top: 1rem;

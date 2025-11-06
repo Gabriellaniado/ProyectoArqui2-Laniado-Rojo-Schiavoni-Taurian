@@ -38,7 +38,7 @@ func (r SalesLocalCacheRepository) GetByID(ctx context.Context, id string) (doma
 	return sale, nil
 }
 
-func (r SalesLocalCacheRepository) GetByCustomerID(ctx context.Context, customerID string) ([]domain.Sales, error) {
+func (r SalesLocalCacheRepository) GetByCustomerID(ctx context.Context, customerID int) ([]domain.Sales, error) {
 	// Cache local solo puede buscar por clave exacta (ID)
 	return []domain.Sales{}, fmt.Errorf("getByCustomerID is not supported in local cache")
 }

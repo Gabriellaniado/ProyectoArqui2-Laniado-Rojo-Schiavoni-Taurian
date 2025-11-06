@@ -15,7 +15,7 @@ items_para_cargar = [
         "description": "Yerba tradicional con palo, sabor intenso y duradero. Paquete de 1kg.",
         "price": 2800.00,
         "stock": 100,
-        "image_url": "https://inym.org.ar/imagenes/archivos/noticias/80133_imagen.jpg"
+        "image_url": "https://cdn11.bigcommerce.com/s-3stx4pub31/images/stencil/1920w/products/1030/2867/rosamonte_premoum__68001.1648060634.png?c=2"
     },
     {
         "name": "Yerba Mate Playadito",
@@ -23,7 +23,7 @@ items_para_cargar = [
         "description": "Sabor suave y amigable, ideal para principiantes. Paquete de 1kg.",
         "price": 2950.00,
         "stock": 120,
-        "image_url": "https://inym.org.ar/imagenes/archivos/noticias/80133_imagen.jpg"
+        "image_url": "https://jumboargentina.vtexassets.com/arquivos/ids/711224/Yerba-Mate-Playadito-Suave-X1kg-1-854539.jpg?v=637938633804770000"
     },
     {
         "name": "Yerba Mate Taragüí",
