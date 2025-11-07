@@ -1,0 +1,223 @@
+# =================================================================
+# SERVICIOS DE APLICACIÓN (Tus Microservicios)
+# =================================================================
+services:
+  # --- 1. Frontend (React) ---
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:80"
+    environment:
+      - REACT_APP_USERS_SERVICE_URL=http://localhost:8082
+      - REACT_APP_ITEMS_SERVICE_URL=http://localhost:8080
+      - REACT_APP_SEARCH_SERVICE_URL=http://localhost:8081
+    depends_on:
+      - products-api
+      - search-api
+      - users-api
+    networks:
+      - mi-red-interna
+
+  # --- 2. API de Productos ---
+  products-api:
+    build:
+      context: ./products-api
+    ports:
+      - "8080:8080"
+    environment:
+      # API address
+      - PORT=8080
+      # Mongo connection
+      - MONGO_URI=mongodb://mongo:27017
+      - MONGO_DB=demo
+      - MONGO_COLLECTION=items
+      # Memcached
+      - MEMCACHED_HOST=memcached
+      - MEMCACHED_PORT=11211
+      - CACHE_TTL_SECONDS=60
+      # RabbitMQ
+      - RABBITMQ_USER=admin
+      - RABBITMQ_PASS=admin
+      - RABBITMQ_HOST=rabbit
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_QUEUE_NAME=items
+      # Solr
+      - SOLR_HOST=solr
+      - SOLR_PORT=8983
+      - SOLR_CORE=demo
+    # --- CORREGIDO: Faltaban memcached y solr ---
+    depends_on:
+      mongo:
+        condition: service_healthy
+      rabbit:
+        condition: service_healthy
+      memcached:
+        # <-- AÑADIDO
+        condition: service_healthy
+      solr:
+        # <-- AÑADIDO
+        condition: service_healthy
+    networks:
+      - mi-red-interna
+
+  # --- 3. API de Search (Nombre de carpeta corregido) ---
+  search-api:
+    build:
+      context: ./search-list-api
+    ports:
+      - "8081:8081"
+    environment:
+      - PORT=8081
+      - RABBITMQ_USER=admin
+      - RABBITMQ_PASS=admin
+      - RABBITMQ_HOST=rabbit
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_QUEUE_NAME=items
+      - SOLR_HOST=solr
+      - SOLR_PORT=8983
+      - SOLR_CORE=demo
+    depends_on:
+      solr:
+        condition: service_healthy
+      rabbit:
+        condition: service_healthy
+    networks:
+      - mi-red-interna
+
+  # --- 4. API de Usuarios ---
+  users-api:
+    build:
+      context: ./users-api
+    ports:
+      - "8082:8082"
+    environment:
+      - PORT=8082
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=appuser
+      - DB_PASS=1234
+      - DB_NAME=e-commerce-users-db
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - mi-red-interna
+
+  # =================================================================
+  # DEPENDENCIAS (Bases de Datos, Colas, etc.)
+  # =================================================================
+
+  # --- 5. MongoDB (Para Products) ---
+  mongo:
+    image: mongo:latest
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=${MONGO_DB:-demo}
+    volumes:
+      - ./mongo-init:/docker-entrypoint-initdb.d:ro
+      - mongo_data:/data/db
+    networks:
+      - mi-red-interna
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # --- 6. MySQL (Para Users) ---
+  db:
+    image: mysql:8.0
+    container_name: arqui2-ecommerce-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: e-commerce-users-db
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: 1234
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./users-api/db/init:/docker-entrypoint-initdb.d:ro
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      retries: 5
+    networks:
+      - mi-red-interna
+
+  # --- 7. Solr (Para Search) ---
+  solr:
+    image: solr:9
+    container_name: arqui2-ecommerce-solr
+    restart: unless-stopped
+    shm_size: '1g'
+    ports:
+      - "8983:8983"
+    volumes:
+      - solr_data:/var/solr
+    networks:
+      - mi-red-interna
+    command:
+      - solr-precreate
+      - demo
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8983/solr/demo/admin/ping" ]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # --- 8. RabbitMQ (Para Products y Search) ---
+  rabbit:
+    image: rabbitmq:3-management
+    container_name: rabbit
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-admin}
+    networks:
+      - mi-red-interna
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "check_port_connectivity" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # --- 9. Memcached ---
+  memcached:
+    image: memcached:1.6-alpine
+    restart: unless-stopped
+    command: [ "-m", "64" ]
+    ports:
+      - "11211:11211"
+    networks:
+      - mi-red-interna
+    # --- CORREGIDO: Faltaba el healthcheck para memcached ---
+    healthcheck:
+      test: [ "CMD", "sh", "-c", "echo 'stats' | nc localhost 11211" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+# =================================================================
+# DEFINICIONES GLOBALES
+# =================================================================
+
+# --- Volúmenes (Para persistir datos y poder borrarlos) ---
+volumes:
+  mongo_data:
+  mysql_data:
+  solr_data:
+networks:
+  mi-red-interna:
+    driver: bridge

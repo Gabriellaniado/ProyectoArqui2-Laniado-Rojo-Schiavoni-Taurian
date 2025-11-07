@@ -1,0 +1,36 @@
+# ----- Etapa 1: Construcción (Build) -----
+# Usamos una imagen de Node para construir el proyecto
+FROM node:18-alpine AS build
+
+# Establecemos el directorio de trabajo dentro del contenedor
+WORKDIR /app
+
+# Copiamos package.json y package-lock.json (o yarn.lock)
+COPY package*.json ./
+
+# Instalamos las dependencias
+RUN npm install
+
+# Copiamos el resto del código fuente
+COPY . .
+
+# Ejecutamos el script de build de React
+RUN npm run build
+
+# ----- Etapa 2: Servicio (Serve) -----
+# Usamos una imagen de Nginx (un servidor web ligero)
+FROM nginx:stable-alpine
+
+# Copiamos solo los archivos estáticos construidos desde la etapa anterior
+# La carpeta de build de React (usualmente /app/build) va al directorio web de Nginx
+COPY --from=build /app/build /usr/share/nginx/html
+
+# Copiamos nuestra configuración personalizada de Nginx
+# (Este archivo lo crearemos en el siguiente paso)
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Exponemos el puerto 80 (el puerto por defecto de Nginx)
+EXPOSE 80
+
+# El comando para iniciar Nginx cuando el contenedor se inicie
+CMD ["nginx", "-g", "daemon off;"]

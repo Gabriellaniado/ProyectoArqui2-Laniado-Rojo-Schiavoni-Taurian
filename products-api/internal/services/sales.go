@@ -287,7 +287,7 @@ func (s *SalesServiceImpl) validateSale(sale domain.BodySales) error {
 
 func VerifyUser(ctx context.Context, id int) error {
 
-	response, err := http.Get(fmt.Sprintf("http://localhost:8082/users/%d", id))
+	response, err := http.Get(fmt.Sprintf("http://users-api:8082/users/%d", id))
 	if err != nil {
 		return fmt.Errorf("error getting user: %w", err)
 	}

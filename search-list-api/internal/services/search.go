@@ -170,7 +170,7 @@ func (s *SearchServiceImpl) handleMessage(ctx context.Context, message ItemEvent
 }
 
 func GetItemByID(id string) (domain.Item, error) {
-	response, err := http.Get(fmt.Sprintf("http://localhost:8080/items/%s", id))
+	response, err := http.Get(fmt.Sprintf("http://products-api:8080/items/%s", id))
 	if err != nil {
 		return domain.Item{}, fmt.Errorf("error getting item: %w", err)
 	}

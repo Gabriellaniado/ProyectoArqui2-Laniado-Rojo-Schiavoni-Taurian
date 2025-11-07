@@ -39,13 +39,6 @@ func main() {
 	// Capa de cache local: maneja operaciones con CCache
 	itemsLocalCacheRepo := repository.NewItemsLocalCacheRepository(30 * time.Second)
 
-	// Capa de búsqueda: maneja operaciones de búsqueda con Solr
-	/*itemsSolrRepo := repository.NewSolrItemsRepository(
-		cfg.Solr.Host,
-		cfg.Solr.Port,
-		cfg.Solr.Core,
-	)*/
-
 	// Inicializamos RabbitMQ para comunicar las novedades de escritura de items
 	itemsQueue := clients.NewRabbitMQClient(
 		cfg.RabbitMQ.Username,
@@ -78,7 +71,7 @@ func main() {
 	salesController := controllers.NewSalesController(&salesService)
 
 	// Capa de lógica de negocio para Auth y controlador
-	authService := services.NewAuthService("http://localhost:8082")
+	authService := services.NewAuthService("http://users-api:8082")
 	authController := controllers.NewAuthController(authService)
 
 	// 🌐 Configurar router HTTP con Gin
