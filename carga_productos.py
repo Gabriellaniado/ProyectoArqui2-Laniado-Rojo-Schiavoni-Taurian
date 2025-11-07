@@ -31,15 +31,14 @@ items_para_cargar = [
         "description": "Energía y sabor clásico argentino. Elaborada con palo. Paquete de 1kg.",
         "price": 2750.00,
         "stock": 80,
-        "image_url": "https://inym.org.ar/imagenes/archivos/noticias/80133_imagen.jpg"
-    },
+        "image url": "https://th.bing.com/th/id/OIP.oB3t1bMWd00zl8uW2qlkAQHaHa?w=208&h=208&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3"},
     {
         "name": "Yerba Mate Amanda Orgánica",
         "category": "Yerbas",
         "description": "Certificada orgánica, sin agroquímicos, sabor suave. Paquete de 500g.",
         "price": 3500.00,
         "stock": 50,
-        "image_url": "https://inym.org.ar/imagenes/archivos/noticias/80133_imagen.jpg"
+        "image_url": "https://th.bing.com/th/id/OIP.x-84SRRInKV3fdV8M20rYAHaHa?w=210&h=210&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3"
     },
     {
         "name": "Yerba Mate Cruz de Malta",
@@ -47,7 +46,7 @@ items_para_cargar = [
         "description": "Elaborada con palo, molienda equilibrada y sabor tradicional. Paquete de 1kg.",
         "price": 2600.00,
         "stock": 75,
-        "image_url": "https://inym.org.ar/imagenes/archivos/noticias/80133_imagen.jpg"
+        "image_url": "https://th.bing.com/th/id/OIP.-QQZ0i2KEdBbzghjwFzqOAAAAA?w=152&h=203&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3"
     },
 
     # Categoría: Mates
@@ -57,7 +56,7 @@ items_para_cargar = [
         "description": "Clásico mate de calabaza curado, con virola de alpaca.",
         "price": 7500.00,
         "stock": 30,
-        "image_url": "https://inym.org.ar/imagenes/archivos/noticias/80133_imagen.jpg"
+        "image_url": "https://i.etsystatic.com/36685341/r/il/43d74c/4540646912/il_1080xN.4540646912_6cgs.jpg"
     },
     {
         "name": "Mate Imperial de Alpaca",
@@ -65,7 +64,7 @@ items_para_cargar = [
         "description": "Mate de calabaza forrado en cuero, con detalles y virola de alpaca.",
         "price": 15000.00,
         "stock": 15,
-        "image_url": "https://inym.org.ar/imagenes/archivos/noticias/80133_imagen.jpg"
+        "image_url": "https://th.bing.com/th/id/OIP.UPwQJWksMmPHYWIMp-B5bAHaGy?w=225&h=206&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3"
     },
     {
         "name": "Mate de Madera (Palo Santo)",
@@ -73,7 +72,7 @@ items_para_cargar = [
         "description": "Mate de madera de palo santo, naturalmente aromático.",
         "price": 6000.00,
         "stock": 40,
-        "image_url": "https://inym.org.ar/imagenes/archivos/noticias/80133_imagen.jpg"
+        "image_url": "https://th.bing.com/th/id/OIP.w9Pey6Cuf8F-oXIR0veUEgHaDy?w=349&h=178&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3"
     },
     {
         "name": "Mate de Silicona",
@@ -81,7 +80,7 @@ items_para_cargar = [
         "description": "Mate moderno, fácil de limpiar, no necesita curado. Varios colores.",
         "price": 4500.00,
         "stock": 60,
-        "image_url": "https://inym.org.ar/imagenes/archivos/noticias/80133_imagen.jpg"
+        "image_url": "https://th.bing.com/th/id/OIP.H8RS2uX3Dgdac5aG-t0tXQHaHM?w=217&h=211&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3g"
     },
     {
         "name": "Mate de Acero Inoxidable",
@@ -89,7 +88,7 @@ items_para_cargar = [
         "description": "Doble capa térmica, mantiene la temperatura y es irrompible.",
         "price": 8000.00,
         "stock": 50,
-        "image_url": "https://inym.org.ar/imagenes/archivos/noticias/80133_imagen.jpg"
+        "image_url": "https://th.bing.com/th/id/OIP.pS_64JEGhQsEeFvYIzrehwHaHa?w=191&h=191&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3"
     },
 
     # Categoría: Bombillas
@@ -99,7 +98,7 @@ items_para_cargar = [
         "description": "Clásica bombilla de alpaca, filtro de resorte. No se tapa.",
         "price": 3500.00,
         "stock": 80,
-        "image_url": "https://inym.org.ar/imagenes/archivos/noticias/80133_imagen.jpg"
+        "image_url": "https://th.bing.com/th/id/OIP.yQZ8c5ok-PMDjo49Dzw8bgHaHa?w=203&h=203&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3"
     },
     {
         "name": "Bombilla Plana de Acero",
@@ -107,7 +106,7 @@ items_para_cargar = [
         "description": "Bombilla de acero inoxidable quirúrgico, fácil de limpiar.",
         "price": 4000.00,
         "stock": 100,
-        "image_url": "https://inym.org.ar/imagenes/archivos/noticias/80133_imagen.jpg"
+        "image_url":"https://th.bing.com/th/id/OIP.QPMT_yC49G-OY4HL9r4u2gHaHa?w=185&h=186&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3"
     },
     {
         "name": "Bombilla con Filtro Desmontable",
@@ -115,7 +114,7 @@ items_para_cargar = [
         "description": "Permite una limpieza profunda del filtro. Incluye cepillo.",
         "price": 5000.00,
         "stock": 65,
-        "image_url": "https://inym.org.ar/imagenes/archivos/noticias/80133_imagen.jpg"
+        "image_url": "https://th.bing.com/th/id/OIP.1GpAibNAff_QaaZkFDWoLwHaJ4?w=146&h=195&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3"
     },
     {
         "name": "Bombilla de Alpaca Cincelada",
@@ -123,7 +122,7 @@ items_para_cargar = [
         "description": "Diseño artesanal con detalles cincelados a mano.",
         "price": 9000.00,
         "stock": 25,
-        "image_url": "https://inym.org.ar/imagenes/archivos/noticias/80133_imagen.jpg"
+        "image_url": "https://th.bing.com/th/id/OIP.lVu51GMa7_X09s_eBIYCPwHaHa?w=215&h=215&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3"
     },
     {
         "name": "Bombilla Cuchara",
@@ -131,7 +130,7 @@ items_para_cargar = [
         "description": "Filtro tipo cuchara, ideal para yerbas de molienda fina.",
         "price": 3800.00,
         "stock": 70,
-        "image_url": "https://inym.org.ar/imagenes/archivos/noticias/80133_imagen.jpg"
+        "image_url": "https://th.bing.com/th/id/OIP.IlWe3UNwxkwA3tmn147HXQHaJQ?w=158&h=198&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3"
     },
 
     # Categoría: Accesorios
@@ -141,15 +140,7 @@ items_para_cargar = [
         "description": "Termo de acero inoxidable, mantiene el agua caliente 24hs. Pico cebador.",
         "price": 45000.00,
         "stock": 20,
-        "image_url": "https://inym.org.ar/imagenes/archivos/noticias/80133_imagen.jpg"
-    },
-    {
-        "name": "Kit de Limpieza (Ejemplo tuyo)",
-        "category": "Accesorios",
-        "description": "Kit completo de cepillos y herramientas para limpiar bombillas y mates.",
-        "price": 3200.00,
-        "stock": 55,
-        "image_url": "https://inym.org.ar/imagenes/archivos/noticias/80133_imagen.jpg"
+        "image_url": "https://th.bing.com/th/id/OIP.8tpU8OWn8UOjspIBgqSF-QHaGo?w=238&h=212&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3"
     },
     {
         "name": "Matera de Cuero",
@@ -157,23 +148,23 @@ items_para_cargar = [
         "description": "Bolso portatermo de cuero vacuno para llevar el set de mate completo.",
         "price": 22000.00,
         "stock": 30,
-        "image_url": "https://inym.org.ar/imagenes/archivos/noticias/80133_imagen.jpg"
+        "image_url": "https://th.bing.com/th/id/OIP.N-Hyk32C41op_bmyNj9dLAHaHa?w=202&h=202&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3"
     },
     {
-        "name": "Yerbero y Azucarera (Lata)",
+        "name": "Yerbero y Azucarera",
         "category": "Accesorios",
         "description": "Set de latas con pico vertedor para yerba y azúcar. Diseño pampa.",
         "price": 5500.00,
         "stock": 90,
-        "image_url": "https://inym.org.ar/imagenes/archivos/noticias/80133_imagen.jpg"
+        "image_url": "https://th.bing.com/th/id/OIP.12N8UygotjGg2_6im6J1-QHaHa?w=211&h=211&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3"
     },
     {
-        "name": "Pava Eléctrica Matera",
+        "name": "Pava Eléctrica ATMA",
         "category": "Accesorios",
         "description": "Pava eléctrica con corte automático a 85°C, temperatura ideal para mate.",
         "price": 28000.00,
         "stock": 40,
-        "image_url": "https://inym.org.ar/imagenes/archivos/noticias/80133_imagen.jpg"
+        "image_url": "https://th.bing.com/th/id/OIP.UYFgOYGccHou1IWwTgRETQHaIN?w=184&h=204&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3"
     }
 ]
 
@@ -189,7 +180,7 @@ def cargar_items():
             # Realizar la solicitud POST
             # 'requests' automáticamente serializa el dict a JSON
             # y establece el header 'Content-Type: application/json'
-            response = requests.put(API_URL, json=item)
+            response = requests.post(API_URL, json=item)
 
             # Verificar el código de estado de la respuesta
             # 201 (Created) es el código estándar para un POST exitoso que crea un recurso.

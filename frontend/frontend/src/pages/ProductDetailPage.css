@@ -7,14 +7,14 @@
   background-color: transparent;
   color: #2d5016;
   border: 2px solid #2d5016;
-  padding: 0.75rem 1.5rem;
+  padding: 0.6rem 1.2rem;
   border-radius: 10px;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s;
   font-family: 'Poppins', sans-serif;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .back-button:hover {
@@ -26,17 +26,17 @@
 .product-detail {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 3rem;
+  gap: 2rem;
   background-color: #fef7e5;
-  border-radius: 20px;
-  padding: 3rem;
+  border-radius: 16px;
+  padding: 2rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
 .product-image-large {
   width: 100%;
-  height: 600px;
-  border-radius: 16px;
+  height: 420px;
+  border-radius: 12px;
   overflow: hidden;
   background-color: #fef7e5;
 }
@@ -44,17 +44,17 @@
 .product-image-large img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .product-info-detailed {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .product-title {
-  font-size: 2.5rem;
+  font-size: 1.8rem;
   font-weight: 700;
   color: #2d5016;
   margin: 0;
@@ -70,87 +70,91 @@
 .category-label {
   font-weight: 600;
   color: #6b8e4e;
+  font-size: 0.95rem;
 }
 
 .category-value {
   background-color: #fef7e5;
   color: #2d5016;
-  padding: 0.5rem 1rem;
+  padding: 0.4rem 0.8rem;
   border-radius: 20px;
   font-weight: 500;
+  font-size: 0.9rem;
 }
 
 .product-description {
-  margin-top: 1rem;
+  margin-top: 0.75rem;
 }
 
 .product-description h3 {
-  font-size: 1.3rem;
+  font-size: 1.1rem;
   color: #2d5016;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
 .product-description p {
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   color: #5a5a5a;
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
 .product-stock {
   display: flex;
   gap: 0.5rem;
   align-items: center;
-  padding: 1rem;
+  padding: 0.75rem;
   background-color: #fef7e5;
-  border-radius: 12px;
+  border-radius: 10px;
 }
 
 .stock-label {
   font-weight: 600;
   color: #2d5016;
+  font-size: 0.95rem;
 }
 
 .stock-value {
   color: #4a7c2a;
   font-weight: 700;
+  font-size: 0.95rem;
 }
 
 .product-price-large {
-  font-size: 3rem;
+  font-size: 2.2rem;
   font-weight: 700;
   color: #4a7c2a;
-  margin: 1rem 0;
+  margin: 0.75rem 0;
 }
 
 .purchase-section {
-  margin-top: 2rem;
-  padding: 2rem;
+  margin-top: 1.5rem;
+  padding: 1.5rem;
   background-color: #fef7e5;
-  border-radius: 16px;
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .quantity-selector {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .quantity-selector label {
   font-weight: 600;
   color: #2d5016;
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
 .quantity-input {
-  padding: 1rem;
+  padding: 0.75rem;
   border: 2px solid #d4d0c4;
   border-radius: 10px;
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-family: 'Poppins', sans-serif;
-  width: 150px;
+  width: 120px;
   font-weight: 600;
 }
 
@@ -164,30 +168,30 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 0;
+  padding: 0.75rem 0;
   border-top: 2px solid #d4d0c4;
   border-bottom: 2px solid #d4d0c4;
 }
 
 .total-price span:first-child {
-  font-size: 1.3rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: #2d5016;
 }
 
 .total-amount {
-  font-size: 2rem;
+  font-size: 1.6rem;
   font-weight: 700;
   color: #4a7c2a;
 }
 
 .btn-purchase {
-  padding: 1.25rem 2rem;
+  padding: 1rem 1.5rem;
   background-color: #2d5016;
   color: #fef7e5;
   border: none;
   border-radius: 12px;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s;
@@ -209,18 +213,18 @@
 @media (max-width: 968px) {
   .product-detail {
     grid-template-columns: 1fr;
-    padding: 2rem;
+    padding: 1.5rem;
   }
 
   .product-image-large {
-    height: 400px;
+    height: 300px;
   }
 
   .product-title {
-    font-size: 2rem;
+    font-size: 1.5rem;
   }
 
   .product-price-large {
-    font-size: 2.5rem;
+    font-size: 1.8rem;
   }
 }

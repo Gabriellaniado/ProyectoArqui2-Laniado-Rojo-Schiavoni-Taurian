@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { productService } from '../services/productService';
 import { salesService } from '../services/salesService';
 import { isAuthenticated, getCustomerId } from '../utils/auth';
@@ -9,11 +9,14 @@ import './ProductDetailPage.css';
 const ProductDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [purchasing, setPurchasing] = useState(false);
+
+  const savedFilters = location.state?.filters;
 
   useEffect(() => {
     fetchProduct();
@@ -86,6 +89,11 @@ const ProductDetailPage = () => {
     }
   };
 
+    const handleGoBack = () => {
+  console.log('🔙 Volviendo atrás con filtros:', savedFilters); // 👈 Debug
+  navigate('/', { state: savedFilters ? { filters: savedFilters } : undefined });
+};
+
   if (loading) {
     return (
       <div className="product-detail-page">
@@ -113,7 +121,7 @@ const ProductDetailPage = () => {
       <Header />
 
       <div className="container">
-        <button className="back-button" onClick={() => navigate('/')}>
+        <button className="back-button" onClick={handleGoBack}>
           ← Volver a productos
         </button>
 
