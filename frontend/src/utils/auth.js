@@ -63,3 +63,15 @@ export const getDecodedToken = () => {
     return null;
   }
 };
+
+export const isAdmin = () => {
+  const token = getToken();
+  if (!token) return false;
+
+  try {
+    const decoded = jwtDecode(token);
+    return decoded.is_admin === true;
+  } catch (error) {
+    return false;
+  }
+};

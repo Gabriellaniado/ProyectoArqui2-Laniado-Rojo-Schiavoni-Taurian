@@ -1,12 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { isAuthenticated, removeToken, isAdmin } from '../utils/auth';
+import { isAuthenticated, removeToken } from '../utils/auth';
 import './Header.css';
 
 const Header = () => {
   const navigate = useNavigate();
   const authenticated = isAuthenticated();
-  const admin = isAdmin();
 
   const handleLogout = () => {
     removeToken();
@@ -27,21 +26,12 @@ const Header = () => {
         <nav className="nav-buttons">
           {authenticated ? (
             <>
-              {admin ? (
-                <button
-                  className="btn-secondary"
-                  onClick={() => navigate('/admin')}
-                >
-                  Administración
-                </button>
-              ) : (
-                <button
-                  className="btn-secondary"
-                  onClick={() => navigate('/mis-compras')}
-                >
-                  Mis Compras
-                </button>
-              )}
+              <button
+                className="btn-secondary"
+                onClick={() => navigate('/mis-compras')}
+              >
+                Mis Compras
+              </button>
               <button
                 className="btn-primary"
                 onClick={handleLogout}

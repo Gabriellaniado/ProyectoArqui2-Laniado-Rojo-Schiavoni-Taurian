@@ -1,0 +1,189 @@
+.product-form-page {
+  min-height: 100vh;
+  background-color: #fef7e5;
+}
+
+.product-form-page .container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.form-header {
+  margin-bottom: 2rem;
+}
+
+.btn-back {
+  background-color: transparent;
+  color: #10382b;
+  border: 2px solid #10382b;
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: 'Poppins', sans-serif;
+  margin-bottom: 1.5rem;
+}
+
+.btn-back:hover {
+  background-color: #10382b;
+  color: #fef7e5;
+  transform: translateX(-5px);
+}
+
+.form-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #10382b;
+  margin: 0;
+}
+
+.product-form {
+  background-color: #ffffff;
+  border-radius: 20px;
+  padding: 3rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #10382b;
+  font-family: 'Poppins', sans-serif;
+}
+
+.form-group input,
+.form-group textarea {
+  padding: 0.875rem 1rem;
+  border: 2px solid #d4d0c4;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-family: 'Poppins', sans-serif;
+  background-color: #ffffff;
+  transition: all 0.3s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #1a5038;
+  box-shadow: 0 0 0 3px rgba(26, 80, 56, 0.1);
+}
+
+.form-group input.error,
+.form-group textarea.error {
+  border-color: #c73e1d;
+}
+
+.form-group input.error:focus,
+.form-group textarea.error:focus {
+  box-shadow: 0 0 0 3px rgba(199, 62, 29, 0.1);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.error-message {
+  font-size: 0.875rem;
+  color: #c73e1d;
+  font-weight: 500;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  padding-top: 2rem;
+  border-top: 2px solid #f0ede5;
+}
+
+.btn-cancel,
+.btn-submit {
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: 'Poppins', sans-serif;
+}
+
+.btn-cancel {
+  background-color: transparent;
+  color: #10382b;
+  border: 2px solid #10382b;
+}
+
+.btn-cancel:hover:not(:disabled) {
+  background-color: #f0ede5;
+}
+
+.btn-submit {
+  background-color: #10382b;
+  color: #fef7e5;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background-color: #1a5038;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 56, 43, 0.3);
+}
+
+.btn-cancel:disabled,
+.btn-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem;
+  font-size: 1.2rem;
+  color: #10382b;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .product-form {
+    padding: 2rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-title {
+    font-size: 2rem;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .btn-cancel,
+  .btn-submit {
+    width: 100%;
+  }
+}

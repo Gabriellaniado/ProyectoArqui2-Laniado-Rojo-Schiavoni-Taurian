@@ -6,9 +6,6 @@ import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/LoginPage';
 import PurchasesPage from './pages/PurchasesPage';
 import PurchaseDetailPage from './pages/PurchaseDetailPage';
-import AdminPage from './pages/AdminPage';
-import NewProductPage from './pages/NewProductPage';
-import EditProductPage from './pages/EditProductPage';
 import './App.css';
 
 function App() {
@@ -22,9 +19,6 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/mis-compras" element={<PurchasesPage />} />
           <Route path="/compra/:id" element={<PurchaseDetailPage />} />
-          <Route path="/admin" element={<AdminPage />} />
-          <Route path="/admin/nuevo-producto" element={<NewProductPage />} />
-          <Route path="/admin/editar-producto/:id" element={<EditProductPage />} />
         </Routes>
       </div>
     </Router>
