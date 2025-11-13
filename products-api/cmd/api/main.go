@@ -86,19 +86,17 @@ func main() {
 	})
 
 	// 📚 Rutas de Items API
-	// GET /items - listar los items con filtros(✅ implementado)
-	//router.GET("/items", itemController.List)
 
-	router.POST("/items", itemController.CreateItem)
+	router.POST("/items", authController.VerifyAdminToken, itemController.CreateItem)
 
 	// GET /items/:id - obtener item por ID
 	router.GET("/items/:id", itemController.GetItemByID)
 
 	// PUT /items/:id - actualizar item existente
-	router.PUT("/items/:id", itemController.UpdateItem)
+	router.PUT("/items/:id", authController.VerifyAdminToken, itemController.UpdateItem)
 
 	// DELETE /items/:id - eliminar item
-	router.DELETE("/items/:id", itemController.DeleteItem)
+	router.DELETE("/items/:id", authController.VerifyAdminToken, itemController.DeleteItem)
 
 	// ========================================
 	// SALES - Rutas
