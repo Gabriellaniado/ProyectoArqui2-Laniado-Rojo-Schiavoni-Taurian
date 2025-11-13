@@ -16,12 +16,12 @@ import (
 )
 
 func main() {
-	// 📋 Cargar configuración desde las variables de entorno
+	// Cargar configuracion desde las variables de entorno
 	cfg := config.Load()
 
-	// 🏗️ Inicializar capas de la aplicación (Dependency Injection)
-	// Patrón: Repository -> Service -> Controller
-	// Cada capa tiene una responsabilidad específica
+	// Inicializar capas de la aplicacion (Dependency Injection)
+	// Patron: Repository -> Service -> Controller
+	// Cada capa tiene una responsabilidad especifica
 
 	// Context
 	ctx := context.Background()
@@ -48,14 +48,14 @@ func main() {
 		cfg.RabbitMQ.Port,
 	)
 
-	// Capa de lógica de negocio: validaciones, transformaciones
+	// Capa de logica de negocio: validaciones, transformaciones
 	itemService := services.NewItemsService(itemsMongoRepo, itemsLocalCacheRepo, itemsMemcachedRepo, itemsQueue)
 
 	// Capa de controladores: maneja HTTP requests/responses
 	itemController := controllers.NewItemsController(&itemService)
 
 	// ========================================
-	// SALES - Configuración
+	// SALES - Configuracion
 	// ========================================
 
 	// Repositorio MongoDB para Sales
@@ -64,29 +64,45 @@ func main() {
 	// Repositorio de cache local para Sales (Cache)
 	salesLocalCacheRepo := repository.NewSalesLocalCacheRepository(30 * time.Second)
 
-	// Capa de lógica de negocio para Sales (inyectamos itemService para calcular precios)
+	// Capa de logica de negocio para Sales (inyectamos itemService para calcular precios)
 	salesService := services.NewSalesService(salesMongoRepo, salesLocalCacheRepo, &itemService)
 
 	// Capa de controladores para Sales
 	salesController := controllers.NewSalesController(&salesService)
 
-	// Capa de lógica de negocio para Auth y controlador
+	// Capa de logica de negocio para Auth y controlador
 	authService := services.NewAuthService("http://users-api:8082")
 	authController := controllers.NewAuthController(authService)
 
-	// 🌐 Configurar router HTTP con Gin
+	// ========================================
+	// CART - Configuracion
+	// ========================================
+
+	// Repositorio MongoDB para Cart
+	cartMongoRepo := repository.NewMongoCartRepository(ctx, cfg.Mongo.URI, cfg.Mongo.DB, "carts")
+
+	// Repositorio de cache local para Cart
+	cartLocalCacheRepo := repository.NewCartLocalCacheRepository(30 * time.Second)
+
+	// Capa de logica de negocio para Cart
+	cartService := services.NewCartService(cartMongoRepo, cartLocalCacheRepo, &itemService, &salesService)
+
+	// Capa de controladores para Cart
+	cartController := controllers.NewCartController(cartService)
+
+	// Configurar router HTTP con Gin
 	router := gin.Default()
 
 	// Middleware: funciones que se ejecutan en cada request
 	router.Use(middleware.CORSMiddleware)
 
-	// 🏥 Health check endpoint
+	// Health check endpoint
 	router.GET("/healthz", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
 
-	// 📚 Rutas de Items API
-	// GET /items - listar los items con filtros(✅ implementado)
+	// Rutas de Items API
+	// GET /items - listar los items con filtros(implementado)
 	//router.GET("/items", itemController.List)
 
 	router.POST("/items", itemController.CreateItem)
@@ -122,17 +138,40 @@ func main() {
 	// DELETE /sales/:id - eliminar venta
 	router.DELETE("/sales/:id", authController.VerifyToken, salesController.DeleteSale)
 
-	// Configuración del server HTTP
+	// ========================================
+	// CART - Rutas
+	// ========================================
+
+	// GET /cart/:customerID - obtener carrito del cliente
+	router.GET("/cart/:customerID", authController.VerifyToken, cartController.GetCart)
+
+	// POST /cart/:customerID/items - agregar item al carrito
+	router.POST("/cart/:customerID/items", authController.VerifyToken, cartController.AddItem)
+
+	// PUT /cart/:customerID/items/:itemID - actualizar cantidad de un item
+	router.PUT("/cart/:customerID/items/:itemID", authController.VerifyToken, cartController.UpdateItemCart)
+
+	// DELETE /cart/:customerID/items/:itemID - eliminar item del carrito
+	router.DELETE("/cart/:customerID/items/:itemID", authController.VerifyToken, cartController.RemoveItem)
+
+	// DELETE /cart/:customerID - vaciar carrito completamente
+	router.DELETE("/cart/:customerID", authController.VerifyToken, cartController.ClearCart)
+
+	// POST /cart/:customerID/checkout - procesar compra del carrito
+	router.POST("/cart/:customerID/checkout", authController.VerifyToken, cartController.Checkout)
+
+	// Configuracion del server HTTP
 	srv := &http.Server{
 		Addr:              ":" + cfg.Port,
 		Handler:           router,
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 
-	log.Printf("🚀 API listening on port %s", cfg.Port)
-	log.Printf("📊 Health check: http://localhost:%s/healthz", cfg.Port)
-	log.Printf("📚 Items API: http://localhost:%s/items", cfg.Port)
-	log.Printf("💰 Sales API: http://localhost:%s/sales", cfg.Port)
+	log.Printf("API listening on port %s", cfg.Port)
+	log.Printf("Health check: http://localhost:%s/healthz", cfg.Port)
+	log.Printf("Items API: http://localhost:%s/items", cfg.Port)
+	log.Printf("Sales API: http://localhost:%s/sales", cfg.Port)
+	log.Printf("Cart API: http://localhost:%s/cart", cfg.Port)
 
 	// Iniciar servidor (bloquea hasta que se pare el servidor)
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
