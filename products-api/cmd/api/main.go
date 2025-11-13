@@ -142,6 +142,9 @@ func main() {
 	// CART - Rutas
 	// ========================================
 
+	// Crear un carrito para un cliente (si no existe)
+	router.POST("/cart/:customerID", authController.VerifyToken, cartController.CreateCart)
+
 	// GET /cart/:customerID - obtener carrito del cliente
 	router.GET("/cart/:customerID", authController.VerifyToken, cartController.GetCart)
 

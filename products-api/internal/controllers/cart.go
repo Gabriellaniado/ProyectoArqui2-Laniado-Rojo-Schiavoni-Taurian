@@ -13,6 +13,7 @@ import (
 // CartService define las operaciones de negocio para Cart
 type CartService interface {
 	GetCart(ctx context.Context, customerID int) (domain.CartResponse, error)
+	CreateCart(ctx context.Context, customerID int) (domain.Cart, error)
 	AddItem(ctx context.Context, customerID int, req domain.AddItemRequest) (domain.CartResponse, error)
 	UpdateItemCart(ctx context.Context, customerID int, itemID string, req domain.UpdateItemRequest) (domain.CartResponse, error)
 	RemoveItem(ctx context.Context, customerID int, itemID string) (domain.CartResponse, error)
@@ -30,6 +31,27 @@ func NewCartController(service CartService) *CartController {
 	return &CartController{
 		service: service,
 	}
+}
+
+func (c *CartController) CreateCart(ctx *gin.Context) {
+	customerIDStr := ctx.Param("customerID")
+	customerID, err := strconv.Atoi(customerIDStr)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid customer_id format",
+		})
+		return
+	}
+	cart, err := c.service.CreateCart(ctx, customerID)
+	if err != nil {
+		log.Printf("❌ Error creating cart: %v", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Error creating cart",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, cart)
 }
 
 // GetCart obtiene el carrito del usuario autenticado

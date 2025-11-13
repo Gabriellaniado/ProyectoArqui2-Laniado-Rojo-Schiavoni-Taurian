@@ -35,6 +35,17 @@ func NewCartService(repository CartRepository, cache CartRepository, itemsServic
 	}
 }
 
+func (s *CartServiceImpl) CreateCart(ctx context.Context, customerID int) (domain.Cart, error) {
+	{
+		cart := domain.Cart{
+			CustomerID: customerID,
+			Items:      []domain.CartItem{},
+			Total:      0,
+		}
+		return s.repository.Create(ctx, cart)
+	}
+}
+
 // GetCart obtiene el carrito de un cliente con información enriquecida
 func (s *CartServiceImpl) GetCart(ctx context.Context, customerID int) (domain.CartResponse, error) {
 	// Intentar obtener del cache primero
