@@ -5,6 +5,7 @@ import { salesService } from '../services/salesService';
 import { isAuthenticated, getCustomerId } from '../utils/auth';
 import Header from '../components/Header';
 import './ProductDetailPage.css';
+import { useCart } from '../context/CartContext';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -15,6 +16,8 @@ const ProductDetailPage = () => {
   const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [purchasing, setPurchasing] = useState(false);
+  const { addItem } = useCart();
+  const [addingToCart, setAddingToCart] = useState(false);
 
   const savedFilters = location.state?.filters;
 
@@ -46,6 +49,28 @@ const ProductDetailPage = () => {
     const value = parseInt(e.target.value);
     if (!isNaN(value) && value > 0) {
       setQuantity(value);
+    }
+  };
+
+  const handleAddToCart = async () => {
+    // Verificar autenticación
+    if (!isAuthenticated()) {
+      alert('Debes iniciar sesión para agregar productos al carrito');
+      navigate('/login');
+      return;
+    }
+
+    try {
+      setAddingToCart(true);
+      const success = await addItem(product.id, quantity);
+      if (success) {
+        alert('✅ Producto agregado al carrito');
+        setQuantity(1); // Resetear cantidad
+      }
+    } catch (err) {
+      console.error('Error adding to cart:', err);
+    } finally {
+      setAddingToCart(false);
     }
   };
 
@@ -162,30 +187,40 @@ const ProductDetailPage = () => {
               <div className="quantity-selector">
                 <label htmlFor="quantity">Cantidad:</label>
                 <input
-                  type="number"
-                  id="quantity"
-                  min="1"
-                  max={product.stock}
-                  value={quantity}
-                  onChange={handleQuantityChange}
-                  className="quantity-input"
+                    type="number"
+                    id="quantity"
+                    min="1"
+                    max={product.stock}
+                    value={quantity}
+                    onChange={handleQuantityChange}
+                    className="quantity-input"
                 />
               </div>
 
               <div className="total-price">
                 <span>Total:</span>
                 <span className="total-amount">
-                  ${(product.price * quantity).toFixed(2)}
+                ${(product.price * quantity).toFixed(2)}
                 </span>
               </div>
 
-              <button
-                className="btn-purchase"
-                onClick={handlePurchase}
-                disabled={purchasing || quantity > product.stock}
-              >
-                {purchasing ? 'Procesando...' : 'Comprar'}
-              </button>
+              <div className="action-buttons">
+                <button
+                    className="btn-add-to-cart"
+                    onClick={handleAddToCart}
+                    disabled={addingToCart || quantity > product.stock}
+                >
+                  {addingToCart ? 'Agregando...' : '🛒 Agregar al Carrito'}
+                </button>
+
+                <button
+                    className="btn-purchase"
+                    onClick={handlePurchase}
+                    disabled={purchasing || quantity > product.stock}
+                >
+                  {purchasing ? 'Procesando...' : 'Comprar Ahora'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

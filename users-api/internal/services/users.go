@@ -2,9 +2,12 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"strconv"
 	"strings"
 	"users-api/internal/domain"
@@ -193,11 +196,16 @@ func (s *UsersServiceImpl) Login(ctx context.Context, loginReq domain.LoginReque
 		return domain.LoginResponse{}, errors.New("failed to generate token") //500
 	}
 
+	// Obtener el carrito desde products-api
+	cart := s.getCartFromProductsAPI(ctx, userModel.ID, token)
+
 	return domain.LoginResponse{
 		Token:      token,
 		Name:       userModel.FirstName,
 		Surname:    userModel.LastName,
 		CustomerID: userModel.ID,
+		IsAdmin:    userModel.IsAdmin,
+		Cart:       cart,
 	}, nil
 }
 
@@ -243,4 +251,45 @@ func (s *UsersServiceImpl) VerifyAdminToken(token string) error {
 		return fmt.Errorf("failed to verify admin token: %w", err)
 	}
 	return nil
+}
+
+// getCartFromProductsAPI obtiene el carrito del usuario desde products-api
+func (s *UsersServiceImpl) getCartFromProductsAPI(ctx context.Context, customerID int, token string) interface{} {
+	// URL del products-api (ajustar según tu configuración de docker-compose)
+	url := fmt.Sprintf("http://products-api:8081/carrito/%d", customerID)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		log.Printf("Error creating cart request: %v", err)
+		return map[string]interface{}{"items": []interface{}{}, "total": 0, "item_count": 0}
+	}
+
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Printf("Error calling products-api for cart: %v", err)
+		return map[string]interface{}{"items": []interface{}{}, "total": 0, "item_count": 0}
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		log.Printf("Products-api returned status %d for cart", resp.StatusCode)
+		return map[string]interface{}{"items": []interface{}{}, "total": 0, "item_count": 0}
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Printf("Error reading cart response: %v", err)
+		return map[string]interface{}{"items": []interface{}{}, "total": 0, "item_count": 0}
+	}
+
+	var cart interface{}
+	if err := json.Unmarshal(body, &cart); err != nil {
+		log.Printf("Error parsing cart response: %v", err)
+		return map[string]interface{}{"items": []interface{}{}, "total": 0, "item_count": 0}
+	}
+
+	return cart
 }

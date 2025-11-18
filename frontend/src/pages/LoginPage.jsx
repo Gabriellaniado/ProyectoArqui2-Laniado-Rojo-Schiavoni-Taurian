@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { userService } from '../services/userService';
 import { setToken } from '../utils/auth';
 import { saveCustomerID } from '../utils/auth';
+import { useCart } from '../context/CartContext';
 import './LoginPage.css';
 
 const LoginPage = () => {
+  const { initializeCart } = useCart();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
@@ -37,6 +39,12 @@ const LoginPage = () => {
 
       // Guardar el token en la cookie
       if (response.token) {
+
+        // Inicializar el carrito con los datos del servidor
+        if (response.cart) {
+          initializeCart(response.customer_id, response.cart);
+        }
+
         setToken(response.token);
         saveCustomerID(response.customer_id);
         alert('Inicio de sesión exitoso');

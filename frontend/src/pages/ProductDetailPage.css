@@ -228,3 +228,55 @@
     font-size: 1.8rem;
   }
 }
+
+/* Contenedor de botones de acción */
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.btn-add-to-cart {
+  flex: 1;
+  background-color: #fef7e5;
+  color: #10382b;
+  border: 2px solid #10382b;
+  padding: 0.875rem 1.5rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: 'Poppins', sans-serif;
+}
+
+.btn-add-to-cart:hover:not(:disabled) {
+  background-color: #10382b;
+  color: #fef7e5;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 56, 43, 0.3);
+}
+
+.btn-add-to-cart:disabled {
+  background-color: #cccccc;
+  border-color: #999999;
+  color: #666666;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-purchase {
+  flex: 1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  .btn-add-to-cart,
+  .btn-purchase {
+    width: 100%;
+  }
+}
