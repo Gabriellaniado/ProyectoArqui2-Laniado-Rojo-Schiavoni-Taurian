@@ -15,20 +15,20 @@ type MemcachedItemsRepository struct {
 	client *memcache.Client
 }
 
-func NewMemcachedItemsRepository(host string, port string, ttl time.Duration) MemcachedItemsRepository {
+func NewMemcachedItemsRepository(host string, port string, ttl time.Duration) *MemcachedItemsRepository {
 	client := memcache.New(fmt.Sprintf("%s:%s", host, port))
 
-	return MemcachedItemsRepository{
+	return &MemcachedItemsRepository{
 		client: client,
 		ttl:    ttl,
 	}
 }
 
-func (r MemcachedItemsRepository) List(ctx context.Context, filters domain.SearchFilters) (domain.PaginatedResponse, error) {
+func (r *MemcachedItemsRepository) List(ctx context.Context, filters domain.SearchFilters) (domain.PaginatedResponse, error) {
 	return domain.PaginatedResponse{}, fmt.Errorf("list is not supported in memcached")
 }
 
-func (r MemcachedItemsRepository) Create(ctx context.Context, item domain.Item) (domain.Item, error) {
+func (r *MemcachedItemsRepository) Create(ctx context.Context, item domain.Item) (domain.Item, error) {
 	bytes, err := json.Marshal(item)
 	if err != nil {
 		return domain.Item{}, fmt.Errorf("error marshalling item to JSON: %w", err)
@@ -43,7 +43,7 @@ func (r MemcachedItemsRepository) Create(ctx context.Context, item domain.Item) 
 	return item, nil
 }
 
-func (r MemcachedItemsRepository) GetByID(ctx context.Context, id string) (domain.Item, error) {
+func (r *MemcachedItemsRepository) GetByID(ctx context.Context, id string) (domain.Item, error) {
 	bytes, err := r.client.Get(id)
 	if err != nil {
 		return domain.Item{}, fmt.Errorf("error getting item from memcached: %w", err)
@@ -58,7 +58,7 @@ func (r MemcachedItemsRepository) GetByID(ctx context.Context, id string) (domai
 	return item, nil
 }
 
-func (r MemcachedItemsRepository) Update(ctx context.Context, id string, item domain.Item) (domain.Item, error) {
+func (r *MemcachedItemsRepository) Update(ctx context.Context, id string, item domain.Item) (domain.Item, error) {
 	item.ID = id
 
 	bytes, err := json.Marshal(item)
@@ -79,7 +79,7 @@ func (r MemcachedItemsRepository) Update(ctx context.Context, id string, item do
 	return item, nil
 }
 
-func (r MemcachedItemsRepository) Delete(ctx context.Context, id string) error {
+func (r *MemcachedItemsRepository) Delete(ctx context.Context, id string) error {
 	err := r.client.Delete(id)
 	if err != nil {
 		if err == memcache.ErrCacheMiss {
@@ -88,5 +88,15 @@ func (r MemcachedItemsRepository) Delete(ctx context.Context, id string) error {
 		}
 		return fmt.Errorf("error deleting item from memcached: %w", err)
 	}
+	return nil
+}
+
+func (r *MemcachedItemsRepository) DecrementStockAtomic(ctx context.Context, itemID string, quantity int) (bool, error) {
+	// Memcached es solo cache, no maneja stock
+	return false, nil
+}
+
+func (r *MemcachedItemsRepository) IncrementStock(ctx context.Context, itemID string, quantity int) error {
+	// Memcached es solo cache, no maneja stock
 	return nil
 }

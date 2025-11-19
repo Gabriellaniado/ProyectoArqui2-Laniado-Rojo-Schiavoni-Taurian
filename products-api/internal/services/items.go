@@ -22,6 +22,9 @@ type ItemsService interface {
 
 	// Delete elimina un item por ID
 	Delete(ctx context.Context, id string) error
+
+	DecrementStockAtomic(ctx context.Context, itemID string, quantity int) (bool, error)
+	IncrementStock(ctx context.Context, itemID string, quantity int) error
 }
 
 // ItemsRepository define las operaciones de datos para Items
@@ -39,6 +42,9 @@ type ItemsRepository interface {
 
 	// Delete elimina un item por ID
 	Delete(ctx context.Context, id string) error
+
+	DecrementStockAtomic(ctx context.Context, itemID string, quantity int) (bool, error)
+	IncrementStock(ctx context.Context, itemID string, quantity int) error
 } // ItemsServiceImpl implementa ItemsService
 
 type ItemsPublisher interface { //genera mensajes para rabbit
@@ -197,6 +203,52 @@ func (s *ItemsServiceImpl) Delete(ctx context.Context, id string) error {
 	if err != nil {
 		return fmt.Errorf("error deleting item from repository: %w", err)
 	}
+
+	return nil
+}
+
+func (s *ItemsServiceImpl) DecrementStockAtomic(ctx context.Context, itemID string, quantity int) (bool, error) {
+	// Decrementar en el repository (operación atómica en MongoDB)
+	ok, err := s.repository.DecrementStockAtomic(ctx, itemID, quantity)
+	if err != nil {
+		return false, fmt.Errorf("error decrementing stock: %w", err)
+	}
+
+	if !ok {
+		return false, nil // No había stock suficiente
+	}
+
+	// Invalidar caches en background (ya que el stock cambió)
+	go func() {
+		bgCtx := context.Background()
+		if err := s.localCache.Delete(bgCtx, itemID); err != nil {
+			slog.Warn("⚠️ Error deleting item from local cache", slog.String("item_id", itemID))
+		}
+		if err := s.distributedCache.Delete(bgCtx, itemID); err != nil {
+			slog.Warn("⚠️ Error deleting item from distributed cache", slog.String("item_id", itemID))
+		}
+	}()
+
+	return true, nil
+}
+
+// IncrementStock incrementa stock (para rollback)
+func (s *ItemsServiceImpl) IncrementStock(ctx context.Context, itemID string, quantity int) error {
+	err := s.repository.IncrementStock(ctx, itemID, quantity)
+	if err != nil {
+		return fmt.Errorf("error incrementing stock: %w", err)
+	}
+
+	// Invalidar caches en background
+	go func() {
+		bgCtx := context.Background()
+		if err := s.localCache.Delete(bgCtx, itemID); err != nil {
+			slog.Warn("⚠️ Error deleting item from local cache", slog.String("item_id", itemID))
+		}
+		if err := s.distributedCache.Delete(bgCtx, itemID); err != nil {
+			slog.Warn("⚠️ Error deleting item from distributed cache", slog.String("item_id", itemID))
+		}
+	}()
 
 	return nil
 }

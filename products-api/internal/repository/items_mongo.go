@@ -153,3 +153,51 @@ func (r *MongoItemsRepository) Delete(ctx context.Context, id string) error {
 
 	return nil
 }
+
+// DecrementStockAtomic decrementa stock SOLO si hay suficiente (operación atómica)
+func (r *MongoItemsRepository) DecrementStockAtomic(ctx context.Context, itemID string, quantity int) (bool, error) {
+
+	// Convertir string a ObjectID
+	objID, err := primitive.ObjectIDFromHex(itemID)
+	if err != nil {
+		log.Printf("❌ Invalid ObjectID format: %s", itemID)
+		return false, errors.New("invalid ObjectID format")
+	}
+	filter := bson.M{
+		"_id":   objID,
+		"stock": bson.M{"$gte": quantity}, // Solo si stock >= quantity
+	}
+	update := bson.M{
+		"$inc": bson.M{"stock": -quantity}, //  Decrementar
+	}
+
+	result := r.col.FindOneAndUpdate(ctx, filter, update)
+	if err := result.Err(); err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return false, nil // No había stock suficiente
+		}
+		return false, err
+	}
+	return true, nil
+}
+
+// IncrementStock incrementa stock (para rollback)
+func (r *MongoItemsRepository) IncrementStock(ctx context.Context, itemID string, quantity int) error {
+	objID, err := primitive.ObjectIDFromHex(itemID)
+	if err != nil {
+		log.Printf("❌ Invalid ObjectID format: %s", itemID)
+		return errors.New("invalid ObjectID format")
+	}
+
+	filter := bson.M{"_id": objID}
+	update := bson.M{"$inc": bson.M{"stock": quantity}}
+	_, err = r.col.UpdateOne(ctx, filter, update)
+
+	if err != nil {
+		log.Printf("❌ Error incrementing stock: %v", err)
+		return err
+	}
+
+	log.Printf("✅ Stock incremented for item %s", itemID)
+	return nil
+}
