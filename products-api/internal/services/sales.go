@@ -53,16 +53,11 @@ func (s *SalesServiceImpl) Create(ctx context.Context, sale domain.BodySales) (d
 		return domain.Sales{}, errors.New("invalid customer_id format")
 	}
 
-	/*userExistsErr := VerifyUser(ctx, customerIDint)
-	if userExistsErr != nil {
-		return domain.Sales{}, fmt.Errorf("customer does not exist: %w", userExistsErr)
-	}*/
-
 	if err := s.validateSale(sale); err != nil {
 		return domain.Sales{}, fmt.Errorf("validation error: %w", err)
 	}
 
-	// 📊 VALIDACIONES CONCURRENTES con Go Routines + Channels + WaitGroup
+	// VALIDACIONES CONCURRENTES usando Go Routines, Channels y WaitGroup
 	itemPrice, stockAvailable, err := s.validateConcurrently(ctx, sale, customerIDint)
 	if err != nil {
 		return domain.Sales{}, err
@@ -70,30 +65,14 @@ func (s *SalesServiceImpl) Create(ctx context.Context, sale domain.BodySales) (d
 
 	log.Printf("✅ Concurrent validations passed: stock=%d", stockAvailable)
 
-	/*// Obtener el item para validar stock y calcular precio
-	item, err := s.itemsService.GetByID(ctx, sale.ItemID)
-	if err != nil {
-		return domain.Sales{}, fmt.Errorf("error getting item: %w", err)
-	}
-
-	// Validar que el item exista
-	if item.ID == "" {
-		return domain.Sales{}, errors.New("item does not exist")
-	}
-
-	// Validar que haya stock suficiente
-	if item.Stock < sale.Quantity {
-		return domain.Sales{}, fmt.Errorf("insufficient stock: requested %d, available %d", sale.Quantity, item.Stock)
-	}*/
-
 	newSale := domain.Sales{
 		ItemID:     sale.ItemID,
 		Quantity:   sale.Quantity,
-		TotalPrice: itemPrice * float64(sale.Quantity), // Se calculará abajo
+		TotalPrice: itemPrice * float64(sale.Quantity),
 		CustomerID: customerIDint,
 	}
 
-	// Decrementar el stock del item de forma atomica
+	// Decrementar el stock del item de forma atomica para evitar condiciones de carrera y generar sobreventas
 	ok, err := s.itemsService.DecrementStockAtomic(ctx, sale.ItemID, sale.Quantity)
 	if err != nil {
 		return domain.Sales{}, fmt.Errorf("error decrementing stock: %w", err)
@@ -106,7 +85,7 @@ func (s *SalesServiceImpl) Create(ctx context.Context, sale domain.BodySales) (d
 	created, err := s.repository.Create(ctx, newSale)
 	if err != nil {
 		//  Si falla la creación de la venta, intentar revertir el stock
-		// 🔄 Rollback del stock en background
+		//  Rollback del stock en background
 		go func() {
 			_ = s.itemsService.IncrementStock(context.Background(), sale.ItemID, sale.Quantity)
 			log.Println("🔄 Stock rollback executed")
@@ -124,7 +103,7 @@ func (s *SalesServiceImpl) Create(ctx context.Context, sale domain.BodySales) (d
 	return created, nil
 }
 
-// validateConcurrently ejecuta validaciones en PARALELO usando Go Routines + Channels + WaitGroup
+// validateConcurrently ejecuta validaciones en paralelo
 func (s *SalesServiceImpl) validateConcurrently(ctx context.Context, sale domain.BodySales, customerID int) (float64, int, error) {
 	// Canal para recibir resultados de las goroutines
 	results := make(chan domain.ValidationResult, 2)
@@ -136,8 +115,9 @@ func (s *SalesServiceImpl) validateConcurrently(ctx context.Context, sale domain
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		log.Println("🔍 Goroutine 1: Validating item and stock...")
+		log.Println("Goroutine 1: Validating item and stock...")
 
+		// Obtener el item
 		item, err := s.itemsService.GetByID(ctx, sale.ItemID)
 		if err != nil {
 			results <- domain.ValidationResult{
@@ -145,7 +125,7 @@ func (s *SalesServiceImpl) validateConcurrently(ctx context.Context, sale domain
 				Success: false,
 				Error:   ErrItemNotFound,
 			}
-			return
+			return // Salir de la goroutine
 		}
 
 		// Validar que el item exista
@@ -180,12 +160,13 @@ func (s *SalesServiceImpl) validateConcurrently(ctx context.Context, sale domain
 		log.Printf("✅ Goroutine 1: Item validated - price=%.2f, stock=%d", item.Price, item.Stock)
 	}()
 
-	// 🔀 GOROUTINE 2: Validar customer
+	// GOROUTINE 2: Validar customer
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		log.Printf("🔍 Goroutine 2: Validating customer %d...", customerID)
+		log.Printf("Goroutine 2: Validating customer %d...", customerID)
 
+		// Llamada a users-api para verificar customer
 		err := VerifyUser(ctx, customerID)
 		if err != nil {
 			results <- domain.ValidationResult{
@@ -196,6 +177,7 @@ func (s *SalesServiceImpl) validateConcurrently(ctx context.Context, sale domain
 			return
 		}
 
+		// Customer existe
 		results <- domain.ValidationResult{
 			Name:    "customer",
 			Success: true,
@@ -203,27 +185,27 @@ func (s *SalesServiceImpl) validateConcurrently(ctx context.Context, sale domain
 		log.Printf("✅ Goroutine 2: Customer %d validated", customerID)
 	}()
 
-	// 🔒 Goroutine para cerrar el canal cuando todas las validaciones terminen
+	// Goroutine para cerrar el canal cuando todas las validaciones terminen
 	go func() {
-		wg.Wait()
-		close(results)
+		wg.Wait()      // Esperar a que todas las goroutines terminen
+		close(results) // Cerrar el canal de resultados paara que el for range no espere mas resultados
 		log.Println("🔒 All validation goroutines finished")
 	}()
 
-	// 📥 Recolectar resultados del canal
+	// Recolectar resultados del canal
 	var itemPrice float64
 	var stockAvailable int
 	validations := make(map[string]bool)
 
-	for result := range results {
+	for result := range results { // Lee del canal hasta que esté cerrado
 		if !result.Success {
 			log.Printf("❌ Validation failed: %s - %v", result.Name, result.Error)
 			return 0, 0, result.Error
 		}
 
-		validations[result.Name] = true
+		validations[result.Name] = true // Marcar validación como exitosa
 
-		// Extraer datos del item si es esa validación
+		// Extraer datos del item si esta validado
 		if result.Name == "item" {
 			itemData := result.Data.(map[string]interface{})
 			itemPrice = itemData["price"].(float64)
@@ -231,19 +213,13 @@ func (s *SalesServiceImpl) validateConcurrently(ctx context.Context, sale domain
 		}
 	}
 
-	// Verificar que todas las validaciones pasaron
+	// Verificar que ambas validaciones pasaron
 	if !validations["item"] || !validations["customer"] {
 		return 0, 0, errors.New("incomplete validations")
 	}
 
 	return itemPrice, stockAvailable, nil
 }
-
-// revertStock intenta revertir el stock en caso de error
-/*func (s *SalesServiceImpl) revertStock(ctx context.Context, itemID string, item domain.Item) error {
-	_, err := s.itemsService.Update(ctx, itemID, item)
-	return err
-}*/
 
 // GetByID obtiene una venta por su ID
 func (s *SalesServiceImpl) GetByID(ctx context.Context, id string) (domain.Sales, error) {
