@@ -9,6 +9,7 @@ import (
 	"products-api/internal/domain"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 // SalesRepository define las operaciones de datos para Sales
@@ -26,6 +27,13 @@ type SalesServiceImpl struct {
 	localCache   SalesRepository
 	itemsService ItemsService
 }
+
+var (
+	ErrItemNotFound      = errors.New("item not found")
+	ErrCustomerNotFound  = errors.New("customer not found")
+	ErrInsufficientStock = errors.New("insufficient stock")
+	ErrInvalidInput      = errors.New("invalid input")
+)
 
 // NewSalesService crea una nueva instancia del service
 func NewSalesService(repository SalesRepository, cache SalesRepository, itemsService ItemsService) SalesServiceImpl {
@@ -45,78 +53,172 @@ func (s *SalesServiceImpl) Create(ctx context.Context, sale domain.BodySales) (d
 		return domain.Sales{}, errors.New("invalid customer_id format")
 	}
 
-	userExistsErr := VerifyUser(ctx, customerIDint)
-	if userExistsErr != nil {
-		return domain.Sales{}, fmt.Errorf("customer does not exist: %w", userExistsErr)
-	}
-
 	if err := s.validateSale(sale); err != nil {
 		return domain.Sales{}, fmt.Errorf("validation error: %w", err)
 	}
 
-	// Obtener el item para validar stock y calcular precio
-	item, err := s.itemsService.GetByID(ctx, sale.ItemID)
+	// VALIDACIONES CONCURRENTES usando Go Routines, Channels y WaitGroup
+	itemPrice, stockAvailable, err := s.validateConcurrently(ctx, sale, customerIDint)
 	if err != nil {
-		return domain.Sales{}, fmt.Errorf("error getting item: %w", err)
+		return domain.Sales{}, err
 	}
 
-	// Validar que el item exista
-	if item.ID == "" {
-		return domain.Sales{}, errors.New("item does not exist")
-	}
-
-	// Validar que haya stock suficiente
-	if item.Stock < sale.Quantity {
-		return domain.Sales{}, fmt.Errorf("insufficient stock: requested %d, available %d", sale.Quantity, item.Stock)
-	}
+	log.Printf("✅ Concurrent validations passed: stock=%d", stockAvailable)
 
 	newSale := domain.Sales{
 		ItemID:     sale.ItemID,
 		Quantity:   sale.Quantity,
-		TotalPrice: 0, // Se calculará abajo
+		TotalPrice: itemPrice * float64(sale.Quantity),
 		CustomerID: customerIDint,
 	}
 
-	// Calcular el precio total de la venta
-	newSale.TotalPrice = item.Price * float64(newSale.Quantity)
-
-	// Decrementar el stock del item
-	item.Stock -= sale.Quantity
-	_, err = s.itemsService.Update(ctx, sale.ItemID, item)
+	// Decrementar el stock del item de forma atomica para evitar condiciones de carrera y generar sobreventas
+	ok, err := s.itemsService.DecrementStockAtomic(ctx, sale.ItemID, sale.Quantity)
 	if err != nil {
-		return domain.Sales{}, fmt.Errorf("error updating item stock: %w", err)
+		return domain.Sales{}, fmt.Errorf("error decrementing stock: %w", err)
 	}
-
-	item, err = s.itemsService.Update(ctx, sale.ItemID, item)
-	if err != nil {
-		return domain.Sales{}, fmt.Errorf("error updating item stock: %w", err)
+	if !ok {
+		return domain.Sales{}, errors.New("insufficient stock")
 	}
 
 	// Crear la venta en el repository
 	created, err := s.repository.Create(ctx, newSale)
 	if err != nil {
 		//  Si falla la creación de la venta, intentar revertir el stock
-		// (En un sistema real, esto debería manejarse con transacciones)
-		item.Stock += sale.Quantity
-		if revertErr := s.revertStock(ctx, sale.ItemID, item); revertErr != nil {
-			log.Printf(" Failed to revert stock after sale creation error: %v", revertErr)
-		}
+		//  Rollback del stock en background
+		go func() {
+			_ = s.itemsService.IncrementStock(context.Background(), sale.ItemID, sale.Quantity)
+			log.Println("🔄 Stock rollback executed")
+		}()
 		return domain.Sales{}, fmt.Errorf("error creating sale in repository: %w", err)
 	}
 
-	// Guardar en cache
-	_, err = s.localCache.Create(ctx, created)
-	if err != nil {
-		log.Printf(" Error creating sale in cache: %v", err)
-	}
-
+	// Guardar en cache en background no critico
+	go func() {
+		_, err := s.localCache.Create(context.Background(), created)
+		if err != nil {
+			log.Printf("⚠️ Error creating sale in cache: %v", err)
+		}
+	}()
 	return created, nil
 }
 
-// revertStock intenta revertir el stock en caso de error
-func (s *SalesServiceImpl) revertStock(ctx context.Context, itemID string, item domain.Item) error {
-	_, err := s.itemsService.Update(ctx, itemID, item)
-	return err
+// validateConcurrently ejecuta validaciones en paralelo
+func (s *SalesServiceImpl) validateConcurrently(ctx context.Context, sale domain.BodySales, customerID int) (float64, int, error) {
+	// Canal para recibir resultados de las goroutines
+	results := make(chan domain.ValidationResult, 2)
+
+	// WaitGroup para sincronizar las goroutines
+	var wg sync.WaitGroup
+
+	//  GOROUTINE 1: Validar item (stock y precio)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		log.Println("Goroutine 1: Validating item and stock...")
+
+		// Obtener el item
+		item, err := s.itemsService.GetByID(ctx, sale.ItemID)
+		if err != nil {
+			results <- domain.ValidationResult{
+				Name:    "item",
+				Success: false,
+				Error:   ErrItemNotFound,
+			}
+			return // Salir de la goroutine
+		}
+
+		// Validar que el item exista
+		if item.ID == "" {
+			results <- domain.ValidationResult{
+				Name:    "item",
+				Success: false,
+				Error:   ErrItemNotFound,
+			}
+			return
+		}
+
+		// Validar stock suficiente
+		if item.Stock < sale.Quantity {
+			results <- domain.ValidationResult{
+				Name:    "item",
+				Success: false,
+				Error:   ErrInsufficientStock,
+			}
+			return
+		}
+
+		// Éxito: enviar precio y stock disponible
+		results <- domain.ValidationResult{
+			Name:    "item",
+			Success: true,
+			Data: map[string]interface{}{
+				"price": item.Price,
+				"stock": item.Stock,
+			},
+		}
+		log.Printf("✅ Goroutine 1: Item validated - price=%.2f, stock=%d", item.Price, item.Stock)
+	}()
+
+	// GOROUTINE 2: Validar customer
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		log.Printf("Goroutine 2: Validating customer %d...", customerID)
+
+		// Llamada a users-api para verificar customer
+		err := VerifyUser(ctx, customerID)
+		if err != nil {
+			results <- domain.ValidationResult{
+				Name:    "customer",
+				Success: false,
+				Error:   ErrCustomerNotFound,
+			}
+			return
+		}
+
+		// Customer existe
+		results <- domain.ValidationResult{
+			Name:    "customer",
+			Success: true,
+		}
+		log.Printf("✅ Goroutine 2: Customer %d validated", customerID)
+	}()
+
+	// Goroutine para cerrar el canal cuando todas las validaciones terminen
+	go func() {
+		wg.Wait()      // Esperar a que todas las goroutines terminen
+		close(results) // Cerrar el canal de resultados paara que el for range no espere mas resultados
+		log.Println("🔒 All validation goroutines finished")
+	}()
+
+	// Recolectar resultados del canal
+	var itemPrice float64
+	var stockAvailable int
+	validations := make(map[string]bool)
+
+	for result := range results { // Lee del canal hasta que esté cerrado
+		if !result.Success {
+			log.Printf("❌ Validation failed: %s - %v", result.Name, result.Error)
+			return 0, 0, result.Error
+		}
+
+		validations[result.Name] = true // Marcar validación como exitosa
+
+		// Extraer datos del item si esta validado
+		if result.Name == "item" {
+			itemData := result.Data.(map[string]interface{})
+			itemPrice = itemData["price"].(float64)
+			stockAvailable = itemData["stock"].(int)
+		}
+	}
+
+	// Verificar que ambas validaciones pasaron
+	if !validations["item"] || !validations["customer"] {
+		return 0, 0, errors.New("incomplete validations")
+	}
+
+	return itemPrice, stockAvailable, nil
 }
 
 // GetByID obtiene una venta por su ID
@@ -267,17 +369,17 @@ func (s *SalesServiceImpl) Delete(ctx context.Context, id string) error {
 func (s *SalesServiceImpl) validateSale(sale domain.BodySales) error {
 	// ItemID es obligatorio
 	if strings.TrimSpace(sale.ItemID) == "" {
-		return errors.New("item_id is required and cannot be empty")
+		return fmt.Errorf("%w: item_id is required and cannot be empty", ErrInvalidInput)
 	}
 
 	// CustomerID es obligatorio
 	if sale.CustomerID == "" {
-		return errors.New("customer_id is required and cannot be empty")
+		return fmt.Errorf("%w: customer_id is required and cannot be empty", ErrInvalidInput)
 	}
 
 	// Quantity debe ser mayor a 0
 	if sale.Quantity <= 0 {
-		return errors.New("quantity must be greater than 0")
+		return fmt.Errorf("%w: quantity must be greater than 0", ErrInvalidInput)
 	}
 
 	// TotalPrice no puede ser negativo (si viene en el request)

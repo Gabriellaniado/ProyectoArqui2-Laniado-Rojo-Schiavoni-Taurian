@@ -62,3 +62,14 @@ func (r ItemsLocalCacheRepository) Delete(ctx context.Context, id string) error 
 
 	return nil
 }
+
+func (r *ItemsLocalCacheRepository) DecrementStockAtomic(ctx context.Context, itemID string, quantity int) (bool, error) {
+	// El cache no maneja operaciones de stock, solo almacena datos
+	// Retornamos false para que el service use el repositorio principal
+	return false, nil
+}
+
+func (r *ItemsLocalCacheRepository) IncrementStock(ctx context.Context, itemID string, quantity int) error {
+	// El cache no maneja operaciones de stock
+	return nil
+}

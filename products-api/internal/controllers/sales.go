@@ -2,8 +2,10 @@ package controllers
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"products-api/internal/domain"
+	"products-api/internal/services"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -62,10 +64,20 @@ func (c *SalesController) CreateSale(ctx *gin.Context) {
 	created, err := c.service.Create(ctx.Request.Context(), sale)
 	if err != nil {
 		// Error interno del servidor o validación
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error":   "Failed to create sale",
-			"details": err.Error(),
-		})
+		switch {
+		case errors.Is(err, services.ErrCustomerNotFound):
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "customer not found"})
+		case errors.Is(err, services.ErrItemNotFound):
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "item not found"})
+		case errors.Is(err, services.ErrInsufficientStock):
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "insufficient stock"})
+		case errors.Is(err, services.ErrInvalidInput):
+			// 👇 CAMBIAR: mostrar el mensaje completo del error
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		default:
+			// Solo errores realmente inesperados son 500
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		}
 		return
 	}
 

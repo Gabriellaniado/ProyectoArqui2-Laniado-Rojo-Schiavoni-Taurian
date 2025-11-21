@@ -13,6 +13,13 @@ type Sales struct {
 	CustomerID int       `json:"customer_id"`
 }
 
+type ValidationResult struct {
+	Name    string //"stock,", "customer"
+	Success bool
+	Error   error
+	Data    interface{}
+}
+
 type BodySales struct {
 	ItemID     string `json:"item_id"`
 	Quantity   int    `json:"quantity"`
