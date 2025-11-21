@@ -152,8 +152,8 @@
 }
 
 .price-summary {
-  background-color: #10382b;
   color:#fef7e5;
+  background-color: #10382b;
   padding: 2rem;
   border-radius: 12px;
   margin-top: 1rem;
@@ -165,6 +165,11 @@
   align-items: center;
   padding: 0.75rem 0;
   font-size: 1.1rem;
+  color: #fef7e5;
+}
+
+.price-summary .summary-row span {
+  color: #fef7e5;
 }
 
 .summary-row.total {
@@ -173,6 +178,7 @@
   border-top: 2px solid rgba(245, 243, 237, 0.3);
   font-size: 1.5rem;
   font-weight: 700;
+  color: #fef7e5;
 }
 
 @media (max-width: 968px) {
