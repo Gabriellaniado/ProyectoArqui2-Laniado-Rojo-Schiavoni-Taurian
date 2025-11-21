@@ -16,6 +16,7 @@ const (
 
 type CustomClaims struct {
 	IsAdmin bool `json:"is_admin"`
+	UserID  int  `json:"user_id"`
 	jwt.RegisteredClaims
 }
 
@@ -27,6 +28,7 @@ func GenerateJWT(userID int, isAdmin bool) (string, error) {
 	//  que viajan en el token. el mas importante es el user id)
 	claims := CustomClaims{
 		IsAdmin: isAdmin, // set if the user is an admin
+		UserID:  userID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime), // set the expiration time
 			IssuedAt:  jwt.NewNumericDate(time.Now()),     // set who issued the token
@@ -51,7 +53,7 @@ func GenerateJWT(userID int, isAdmin bool) (string, error) {
 // ValidateJWT validates the JWT token and returns the user ID
 func ValidateJWT(tokenString string) error {
 	// parse the token
-	token, err := jwt.ParseWithClaims(tokenString, &jwt.RegisteredClaims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		// check if the signing method is valid
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -64,7 +66,7 @@ func ValidateJWT(tokenString string) error {
 	}
 
 	// check if the token is valid
-	claims, ok := token.Claims.(*jwt.RegisteredClaims)
+	claims, ok := token.Claims.(*CustomClaims)
 
 	if ok {
 

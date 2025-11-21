@@ -30,11 +30,11 @@ const AdminProductCard = ({ product, onDelete }) => {
   return (
     <div className="admin-product-card">
       <div className="product-image">
-        <img 
-          src={product.image_url || 'https://via.placeholder.com/300x400?text=Mate'} 
+        <img
+          src={product.image_url}
           alt={product.name}
           onError={(e) => {
-            e.target.src = 'https://via.placeholder.com/300x400?text=Mate';
+            e.currentTarget.style.display = 'none';
           }}
         />
       </div>
@@ -43,7 +43,7 @@ const AdminProductCard = ({ product, onDelete }) => {
         <p className="product-category">{product.category}</p>
         <p className="product-price">${product.price.toFixed(2)}</p>
         <p className="product-stock">Stock: {product.stock}</p>
-        
+
         <div className="admin-buttons">
           <button className="btn-edit" onClick={handleEdit}>
             Modificar

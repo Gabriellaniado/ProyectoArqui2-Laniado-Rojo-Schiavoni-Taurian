@@ -46,7 +46,6 @@ const LoginPage = () => {
         }
 
         setToken(response.token);
-        saveCustomerID(response.customer_id);
         alert('Inicio de sesión exitoso');
         navigate('/');
       } else {

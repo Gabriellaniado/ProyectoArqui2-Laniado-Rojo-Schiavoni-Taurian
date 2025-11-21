@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { salesService } from '../services/salesService';
 import { productService } from '../services/productService';
-import { getCustomerId } from '../utils/auth';
+import { getCustomerId, getCustomerIDFromToken } from '../utils/auth';
 import { isAuthenticated } from '../utils/auth';
 import Header from '../components/Header';
 import './PurchasesPage.css';
@@ -27,7 +27,7 @@ const PurchasesPage = () => {
     try {
       setLoading(true);
       setError(null);
-      const customerId = getCustomerId();
+      const customerId = getCustomerIDFromToken();
 
       if (!customerId) {
         setError('No se pudo obtener el ID del usuario');
@@ -140,7 +140,7 @@ const PurchasesPage = () => {
                         src={purchase.productImage}
                         alt={purchase.productName}
                         onError={(e) => {
-                           e.currentTarget.style.display = 'none';
+                          e.currentTarget.style.display = 'none';
                         }}
                       />
                     </div>

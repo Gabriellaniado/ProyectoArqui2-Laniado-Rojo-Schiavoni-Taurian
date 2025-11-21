@@ -22,6 +22,7 @@ type SearchRepository interface {
 type SearchLocalCacheRepository interface {
 	ListHash(ctx context.Context, hash string) (domain.PaginatedResponse, error)
 	SaveWithHash(ctx context.Context, hash string, response domain.PaginatedResponse) error
+	Clear(ctx context.Context) error
 }
 
 type ItemsConsumer interface { //consume mensajes de rabbit
@@ -132,6 +133,12 @@ func (s *SearchServiceImpl) handleMessage(ctx context.Context, message ItemEvent
 
 		slog.Info("🔍 Item indexed in search engine", slog.String("item_id", message.ItemID))
 
+		if err := s.localCache.Clear(ctx); err != nil {
+			slog.Error("⚠️ Failed to clear cache", slog.String("error", err.Error()))
+		} else {
+			slog.Info("🧹 Cache cleared")
+		}
+
 	case "update":
 		item, err := GetItemByID(message.ItemID)
 
@@ -150,6 +157,12 @@ func (s *SearchServiceImpl) handleMessage(ctx context.Context, message ItemEvent
 
 		slog.Info("✏️ Item updated", slog.String("item_id", message.ItemID))
 
+		if err := s.localCache.Clear(ctx); err != nil {
+			slog.Error("⚠️ Failed to clear cache", slog.String("error", err.Error()))
+		} else {
+			slog.Info("🧹 Cache cleared")
+		}
+
 	case "delete":
 		slog.Info("🗑️ Item deleted", slog.String("item_id", message.ItemID))
 
@@ -161,6 +174,18 @@ func (s *SearchServiceImpl) handleMessage(ctx context.Context, message ItemEvent
 		}
 
 		slog.Info("🗑️ Item deleted", slog.String("item_id", message.ItemID))
+
+		if err := s.localCache.Clear(ctx); err != nil {
+			slog.Error("⚠️ Failed to clear cache", slog.String("error", err.Error()))
+		} else {
+			slog.Info("🧹 Cache cleared")
+		}
+
+		if err := s.localCache.Clear(ctx); err != nil {
+			slog.Error("⚠️ Failed to clear cache", slog.String("error", err.Error()))
+		} else {
+			slog.Info("🧹 Cache cleared")
+		}
 
 	default:
 		slog.Info("⚠️ Unknown action", slog.String("action", message.Action))

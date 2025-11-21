@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { productService } from '../services/productService';
 import { salesService } from '../services/salesService';
-import { isAuthenticated, getCustomerId } from '../utils/auth';
+import { isAuthenticated, getCustomerId, getCustomerIDFromToken } from '../utils/auth';
 import Header from '../components/Header';
 import './ProductDetailPage.css';
 import { useCart } from '../context/CartContext';
@@ -96,7 +96,7 @@ const ProductDetailPage = () => {
       const saleData = {
         item_id: product.id,
         quantity: quantity,
-        customer_id: customerId
+        customer_id: getCustomerIDFromToken()
       };
 
       const response = await salesService.createSale(saleData);
@@ -114,10 +114,10 @@ const ProductDetailPage = () => {
     }
   };
 
-    const handleGoBack = () => {
-  console.log('🔙 Volviendo atrás con filtros:', savedFilters); // 👈 Debug
-  navigate('/', { state: savedFilters ? { filters: savedFilters } : undefined });
-};
+  const handleGoBack = () => {
+    console.log('🔙 Volviendo atrás con filtros:', savedFilters); // 👈 Debug
+    navigate('/', { state: savedFilters ? { filters: savedFilters } : undefined });
+  };
 
   if (loading) {
     return (
@@ -156,7 +156,7 @@ const ProductDetailPage = () => {
               src={product.image_url}
               alt={product.name}
               onError={(e) => {
-                
+
               }}
             />
           </div>
@@ -187,36 +187,36 @@ const ProductDetailPage = () => {
               <div className="quantity-selector">
                 <label htmlFor="quantity">Cantidad:</label>
                 <input
-                    type="number"
-                    id="quantity"
-                    min="1"
-                    max={product.stock}
-                    value={quantity}
-                    onChange={handleQuantityChange}
-                    className="quantity-input"
+                  type="number"
+                  id="quantity"
+                  min="1"
+                  max={product.stock}
+                  value={quantity}
+                  onChange={handleQuantityChange}
+                  className="quantity-input"
                 />
               </div>
 
               <div className="total-price">
                 <span>Total:</span>
                 <span className="total-amount">
-                ${(product.price * quantity).toFixed(2)}
+                  ${(product.price * quantity).toFixed(2)}
                 </span>
               </div>
 
               <div className="action-buttons">
                 <button
-                    className="btn-add-to-cart"
-                    onClick={handleAddToCart}
-                    disabled={addingToCart || quantity > product.stock}
+                  className="btn-add-to-cart"
+                  onClick={handleAddToCart}
+                  disabled={addingToCart || quantity > product.stock}
                 >
                   {addingToCart ? 'Agregando...' : '🛒 Agregar al Carrito'}
                 </button>
 
                 <button
-                    className="btn-purchase"
-                    onClick={handlePurchase}
-                    disabled={purchasing || quantity > product.stock}
+                  className="btn-purchase"
+                  onClick={handlePurchase}
+                  disabled={purchasing || quantity > product.stock}
                 >
                   {purchasing ? 'Procesando...' : 'Comprar Ahora'}
                 </button>

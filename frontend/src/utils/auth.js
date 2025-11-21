@@ -5,6 +5,21 @@ export const saveCustomerID = (customerId) => {
   localStorage.setItem("customer_id", customerId);
 };
 
+export const getCustomerIDFromToken = () => {
+  const token = getToken();
+  if (!token) return null;
+
+  try {
+    const decoded = jwtDecode(token);
+    const userId = decoded.user_id;
+    //convertir int to string
+    const userIdString = userId.toString();
+    return userIdString;
+  } catch (error) {
+    return null;
+  }
+};
+
 export const getToken = () => {
   return Cookies.get("token");
 };

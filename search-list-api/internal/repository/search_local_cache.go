@@ -39,3 +39,8 @@ func (r SearchLocalCacheRepository) SaveWithHash(ctx context.Context, hash strin
 	r.client.Set(hash, response, r.ttl)
 	return nil
 }
+
+func (r SearchLocalCacheRepository) Clear(ctx context.Context) error {
+	r.client.Clear()
+	return nil
+}
