@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { cartService } from '../services/cartService';
-import { isAuthenticated, getCustomerId } from '../utils/auth';
+import { isAuthenticated, getCustomerId, getCustomerIDFromToken } from '../utils/auth';
 
 const CartContext = createContext();
 
@@ -24,7 +24,7 @@ export const CartProvider = ({ children }) => {
 
     // Solo cargar al montar si hay usuario autenticado
     useEffect(() => {
-        const customerID = getCustomerId();
+        const customerID = getCustomerIDFromToken();
         if (isAuthenticated() && customerID) {
             setCurrentCustomerId(customerID);
             loadCart();
@@ -32,7 +32,7 @@ export const CartProvider = ({ children }) => {
     }, []); // Solo se ejecuta una vez al montar
 
     // Función para inicializar el carrito desde el login
-// Cambiar la firma de initializeCart para recibir customerID
+    // Cambiar la firma de initializeCart para recibir customerID
     const initializeCart = async (customerID, cartData) => {
         // Primero resetear el carrito anterior
         resetCart();
@@ -73,7 +73,7 @@ export const CartProvider = ({ children }) => {
     const loadCart = async () => {
         try {
             setLoading(true);
-            const customerID = getCustomerId();
+            const customerID = getCustomerIDFromToken();
 
             if (!customerID) {
                 resetCart();
@@ -99,7 +99,7 @@ export const CartProvider = ({ children }) => {
 
         try {
             setLoading(true);
-            const customerID = getCustomerId();
+            const customerID = getCustomerIDFromToken();
             const updatedCart = await cartService.addItem(customerID, itemID, quantity);
             setCart(updatedCart);
             return true;
@@ -117,7 +117,7 @@ export const CartProvider = ({ children }) => {
     const updateItem = async (itemID, quantity) => {
         try {
             setLoading(true);
-            const customerID = getCustomerId();
+            const customerID = getCustomerIDFromToken();
             const updatedCart = await cartService.updateItem(customerID, itemID, quantity);
             setCart(updatedCart);
         } catch (error) {
@@ -133,7 +133,7 @@ export const CartProvider = ({ children }) => {
     const removeItem = async (itemID) => {
         try {
             setLoading(true);
-            const customerID = getCustomerId();
+            const customerID = getCustomerIDFromToken();
             const updatedCart = await cartService.removeItem(customerID, itemID);
             setCart(updatedCart);
         } catch (error) {
@@ -148,7 +148,7 @@ export const CartProvider = ({ children }) => {
     const clearCart = async () => {
         try {
             setLoading(true);
-            const customerID = getCustomerId();
+            const customerID = getCustomerIDFromToken();
             if (customerID) {
                 await cartService.clearCart(customerID);
             }
@@ -165,7 +165,7 @@ export const CartProvider = ({ children }) => {
     const checkout = async () => {
         try {
             setLoading(true);
-            const customerID = getCustomerId();
+            const customerID = getCustomerIDFromToken();
             const result = await cartService.checkout(customerID);
             resetCart();
             return result;
