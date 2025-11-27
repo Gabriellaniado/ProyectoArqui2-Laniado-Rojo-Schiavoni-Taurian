@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"testing"
 	"users-api/internal/domain"
+
+	"github.com/h2non/gock"
 )
 
 // ============================================
@@ -314,6 +316,18 @@ func TestCreate_EmptyLastName(t *testing.T) {
 
 // TestLogin_Success verifica el login exitoso
 func TestLogin_Success(t *testing.T) {
+	defer gock.Off() // Limpiar interceptores después del test
+
+	//  Interceptar llamadas HTTP a products-api
+	gock.New("http://products-api:8081").
+		Get("/carrito/1"). // El customerID será 1 (primer usuario creado)
+		Reply(200).
+		JSON(map[string]interface{}{
+			"items":      []interface{}{},
+			"total":      0,
+			"item_count": 0,
+		})
+
 	mockRepo := NewMockUsersRepository()
 	service := NewUsersService(mockRepo)
 
