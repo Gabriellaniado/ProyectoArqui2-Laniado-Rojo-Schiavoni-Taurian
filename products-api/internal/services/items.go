@@ -2,11 +2,9 @@ package services
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
 	"products-api/internal/domain"
-	"strings"
 )
 
 type ItemsService interface {
@@ -47,20 +45,27 @@ type ItemsRepository interface {
 	IncrementStock(ctx context.Context, itemID string, quantity int) error
 } // ItemsServiceImpl implementa ItemsService
 
+type ItemsRepositoryCache interface {
+	Create(ctx context.Context, item domain.Item) (domain.Item, error)
+	GetByID(ctx context.Context, id string) (domain.Item, error)
+	Update(ctx context.Context, id string, item domain.Item) (domain.Item, error)
+	Delete(ctx context.Context, id string) error
+}
+
 type ItemsPublisher interface { //genera mensajes para rabbit
 	Publish(ctx context.Context, action string, itemID string) error
 }
 
 type ItemsServiceImpl struct {
-	repository       ItemsRepository // Inyección de dependencia
-	localCache       ItemsRepository // Inyección de dependencia
-	distributedCache ItemsRepository // Inyección de dependencia
+	repository       ItemsRepository      // Inyección de dependencia
+	localCache       ItemsRepositoryCache // Inyección de dependencia
+	distributedCache ItemsRepositoryCache // Inyección de dependencia
 	publisher        ItemsPublisher
 }
 
-// NewItemsService crea una nueva instancia del service
+// NewItemsService crea una nueva instancia d	el service
 // Pattern: Dependency Injection - recibe dependencies como parámetros
-func NewItemsService(repository ItemsRepository, localCache ItemsRepository, distributedCache ItemsRepository, publisher ItemsPublisher) ItemsServiceImpl {
+func NewItemsService(repository ItemsRepository, localCache ItemsRepositoryCache, distributedCache ItemsRepositoryCache, publisher ItemsPublisher) ItemsServiceImpl {
 	return ItemsServiceImpl{
 		repository:       repository,
 		localCache:       localCache,
@@ -73,15 +78,8 @@ func NewItemsService(repository ItemsRepository, localCache ItemsRepository, dis
 // Consigna 1: Validar name no vacío y price >= 0
 func (s *ItemsServiceImpl) Create(ctx context.Context, item domain.Item) (domain.Item, error) {
 
-	if item.Name == "" || item.Category == "" || item.Description == "" || item.Price == 0 || item.Stock < 0 {
-		return domain.Item{}, fmt.Errorf("error, all fields need to be filled")
-	}
-	if item.Price <= 0 {
-		return domain.Item{}, fmt.Errorf("error, the price cannot be negative")
-	}
-
-	if item.Stock < 0 {
-		return domain.Item{}, fmt.Errorf("error, the stock cannot be negative")
+	if err := s.validateItem(item); err != nil {
+		return domain.Item{}, fmt.Errorf("validation error: %w", err)
 	}
 
 	created, err := s.repository.Create(ctx, item)
@@ -130,7 +128,7 @@ func (s *ItemsServiceImpl) GetByID(ctx context.Context, id string) (domain.Item,
 			return item, nil
 		}
 
-		s.localCache.Create(ctx, item)
+		//s.localCache.Create(ctx, item)
 		return item, nil
 	}
 	return item, nil
@@ -139,17 +137,6 @@ func (s *ItemsServiceImpl) GetByID(ctx context.Context, id string) (domain.Item,
 // Update actualiza un item existente
 // Consigna 3: Validar campos antes de actualizar
 func (s *ItemsServiceImpl) Update(ctx context.Context, id string, item domain.Item) (domain.Item, error) {
-
-	if item.Name == "" || item.Category == "" || item.Description == "" || item.Price == 0 || item.Stock < 0 {
-		return domain.Item{}, fmt.Errorf("error, all fields need to be filled")
-	}
-	if item.Price < 0 {
-		return domain.Item{}, fmt.Errorf("error, the price cannot be negative")
-	}
-
-	if item.Stock < 0 {
-		return domain.Item{}, fmt.Errorf("error, the stock cannot be negative")
-	}
 
 	if err := s.validateItem(item); err != nil {
 		return domain.Item{}, fmt.Errorf("validation error: %w", err)
@@ -198,7 +185,6 @@ func (s *ItemsServiceImpl) Delete(ctx context.Context, id string) error {
 		return fmt.Errorf("error publishing item deletion: %w", err)
 	}
 
-	// TODO: Borrar de DB
 	err = s.repository.Delete(ctx, id)
 	if err != nil {
 		return fmt.Errorf("error deleting item from repository: %w", err)
@@ -257,13 +243,15 @@ func (s *ItemsServiceImpl) IncrementStock(ctx context.Context, itemID string, qu
 // 🎯 Función helper para reutilizar validaciones
 func (s *ItemsServiceImpl) validateItem(item domain.Item) error {
 	// 📝 Name es obligatorio y no puede estar vacío
-	if strings.TrimSpace(item.Name) == "" {
-		return errors.New("name is required and cannot be empty")
+	if item.Name == "" || item.Category == "" || item.Description == "" || item.Price == 0 || item.Stock < 0 {
+		return fmt.Errorf("error, all fields need to be filled")
+	}
+	if item.Price <= 0 {
+		return fmt.Errorf("error, the price cannot be negative")
 	}
 
-	// 💰 Price debe ser >= 0 (productos gratis están permitidos)
-	if item.Price < 0 {
-		return errors.New("price must be greater than or equal to 0")
+	if item.Stock < 0 {
+		return fmt.Errorf("error, the stock cannot be negative")
 	}
 
 	// ✅ Todas las validaciones pasaron

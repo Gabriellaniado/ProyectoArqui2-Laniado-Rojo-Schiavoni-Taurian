@@ -258,10 +258,13 @@ func (s *CartServiceImpl) Checkout(ctx context.Context, customerID int) ([]domai
 
 	// Validar stock de todos los items antes de procesar
 	for _, cartItem := range cart.Items {
+
 		item, err := s.itemsService.GetByID(ctx, cartItem.ItemID)
 		if err != nil {
 			return nil, fmt.Errorf("error validating item %s: %w", cartItem.ItemID, err)
 		}
+
+		s.itemsService.DecrementStockAtomic(ctx, cartItem.ItemID, cartItem.Quantity)
 
 		if item.Stock < cartItem.Quantity {
 			return nil, fmt.Errorf("insufficient stock for item %s: requested %d, available %d", item.Name, cartItem.Quantity, item.Stock)

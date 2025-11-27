@@ -5,6 +5,10 @@ import time
 # --- Configuración ---
 API_URL = "http://localhost:8080/items/"
 
+# COLOCA AQUÍ TU TOKEN DE USUARIO
+# (Asegúrate de copiarlo tal cual te lo da el login, sin espacios extra)
+USER_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc19hZG1pbiI6dHJ1ZSwidXNlcl9pZCI6MSwiaXNzIjoiYmFja2VuZCIsInN1YiI6ImF1dGgiLCJleHAiOjE3NjQyNzcwOTYsIm5iZiI6MTc2NDI3NjQ5NiwiaWF0IjoxNzY0Mjc2NDk2LCJqdGkiOiIxIn0.-MYqG2uLUD2sdfBOJEMWerv1UU69vDlOiWFOrOgQn5U"
+
 # --- Datos de los 20 Productos ---
 # 5 productos para 4 categorías (Yerbas, Mates, Bombillas, Accesorios)
 items_para_cargar = [
@@ -172,35 +176,50 @@ def cargar_items():
     """
     Función principal para iterar y enviar los datos a la API.
     """
+    
+    # Verificación simple para que no olvides poner el token
+    if USER_TOKEN == "PEGAR_TU_TOKEN_LARGO_AQUI":
+        print("⚠️ ERROR: No has configurado el USER_TOKEN en el script.")
+        return
+
     print(f"--- Iniciando la carga de {len(items_para_cargar)} items a {API_URL} ---")
+
+    # Configuración de los Headers con el Token
+    # Se usa el estándar "Bearer". Si tu backend espera otro formato, modifícalo aquí.
+    headers = {
+        "Authorization": f"Bearer {USER_TOKEN}",
+        "Content-Type": "application/json"
+    }
 
     # Iterar sobre la lista y enviar cada item como POST
     for i, item in enumerate(items_para_cargar):
         try:
-            # Realizar la solicitud POST
-            # 'requests' automáticamente serializa el dict a JSON
-            # y establece el header 'Content-Type: application/json'
-            response = requests.post(API_URL, json=item)
+            # Realizar la solicitud POST pasando el json y los HEADERS
+            response = requests.post(API_URL, json=item, headers=headers)
 
             # Verificar el código de estado de la respuesta
-            # 201 (Created) es el código estándar para un POST exitoso que crea un recurso.
-            # 200 (OK) también es común.
             if response.status_code in [200, 201]:
                 print(f"({i+1}/{len(items_para_cargar)}) ÉXITO: Item '{item['name']}' cargado. (Status: {response.status_code})")
+            elif response.status_code == 401:
+                print(f"({i+1}/{len(items_para_cargar)}) ERROR DE AUTENTICACIÓN: Token inválido o expirado.")
+                break # Detener si el token no sirve
+            elif response.status_code == 403:
+                print(f"({i+1}/{len(items_para_cargar)}) ERROR DE PERMISOS: El token es válido pero no tiene permisos.")
+                break 
             else:
-                # Si el servidor da un error (ej: 400, 500)
+                # Si el servidor da otro error
                 print(f"({i+1}/{len(items_para_cargar)}) ERROR al cargar '{item['name']}': Status {response.status_code}")
                 print(f"   Respuesta del servidor: {response.text}")
 
         except requests.exceptions.ConnectionError:
             print(f"\n[ERROR DE CONEXIÓN] No se pudo conectar a {API_URL}.")
             print("Por favor, asegúrate de que tu servidor local (localhost:8080) esté corriendo.")
-            break # Detener el script si no hay conexión
+            break 
         except Exception as e:
             # Capturar cualquier otro error inesperado
             print(f"({i+1}/{len(items_para_cargar)}) Ocurrió un error inesperado al cargar '{item['name']}': {e}")
 
-        # Opcional: una pequeña pausa para no saturar el servidor
+        # Opcional: una pequeña pausa
         # time.sleep(0.1)
 
     print("--- Carga de datos finalizada. ---")

@@ -22,10 +22,8 @@ type UsersRepository interface {
 	GetByEmail(ctx context.Context, email string) (domain.User, error)
 	Update(ctx context.Context, id int, user domain.User) (domain.UserResponse, error)
 	Delete(ctx context.Context, id int) error
-	//Login(ctx context.Context, loginReq domain.LoginRequest) (domain.LoginResponse, error)
 }
 
-// UsersServiceImpl implementa UsersService
 // UsersServiceImpl implementa UsersService
 type UsersServiceImpl struct {
 	repository UsersRepository

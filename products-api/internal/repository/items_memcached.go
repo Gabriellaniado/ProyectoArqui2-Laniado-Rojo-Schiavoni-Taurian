@@ -24,10 +24,6 @@ func NewMemcachedItemsRepository(host string, port string, ttl time.Duration) *M
 	}
 }
 
-func (r *MemcachedItemsRepository) List(ctx context.Context, filters domain.SearchFilters) (domain.PaginatedResponse, error) {
-	return domain.PaginatedResponse{}, fmt.Errorf("list is not supported in memcached")
-}
-
 func (r *MemcachedItemsRepository) Create(ctx context.Context, item domain.Item) (domain.Item, error) {
 	bytes, err := json.Marshal(item)
 	if err != nil {
@@ -88,15 +84,5 @@ func (r *MemcachedItemsRepository) Delete(ctx context.Context, id string) error 
 		}
 		return fmt.Errorf("error deleting item from memcached: %w", err)
 	}
-	return nil
-}
-
-func (r *MemcachedItemsRepository) DecrementStockAtomic(ctx context.Context, itemID string, quantity int) (bool, error) {
-	// Memcached es solo cache, no maneja stock
-	return false, nil
-}
-
-func (r *MemcachedItemsRepository) IncrementStock(ctx context.Context, itemID string, quantity int) error {
-	// Memcached es solo cache, no maneja stock
 	return nil
 }
